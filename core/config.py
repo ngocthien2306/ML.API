@@ -2,6 +2,15 @@ import os
 
 from pydantic import BaseSettings
 
+SERVERNAME = os.environ.get("SERVERNAME")
+DBNAME = os.environ.get("DBNAME")
+PORT = os.environ.get("PORT")
+DRIVER = os.environ.get("DRIVER")
+USERNAME = os.environ.get("USERNAMEMMSQL")
+PASS = os.environ.get("PASSMMSQL")
+print(SERVERNAME)
+print(DBNAME)
+print(PORT)
 
 class Config(BaseSettings):
     ENV: str = "development"
