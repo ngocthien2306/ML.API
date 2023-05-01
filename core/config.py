@@ -8,8 +8,8 @@ class Config(BaseSettings):
     DEBUG: bool = True
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
-    WRITER_DB_URL: str = f"mysql+aiomysql://fastapi:fastapi@localhost:3306/fastapi"
-    READER_DB_URL: str = f"mysql+aiomysql://fastapi:fastapi@localhost:3306/fastapi"
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
     JWT_SECRET_KEY: str = "fastapi"
     JWT_ALGORITHM: str = "HS256"
     SENTRY_SDN: str = None
@@ -27,14 +27,14 @@ class DevelopmentConfig(Config):
 
 
 class LocalConfig(Config):
-    WRITER_DB_URL: str = f"mysql+aiomysql://fastapi:fastapi@localhost:3306/fastapi"
-    READER_DB_URL: str = f"mysql+aiomysql://fastapi:fastapi@localhost:3306/fastapi"
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
 
 
 class ProductionConfig(Config):
     DEBUG: str = False
-    WRITER_DB_URL: str = f"mysql+aiomysql://fastapi:fastapi@localhost:3306/prod"
-    READER_DB_URL: str = f"mysql+aiomysql://fastapi:fastapi@localhost:3306/prod"
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
 
 
 def get_config():
