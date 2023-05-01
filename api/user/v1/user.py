@@ -14,6 +14,7 @@ from app.user.services import UserService
 from core.fastapi.dependencies import (
     PermissionDependency,
     IsAdmin,
+    AllowAll
 )
 
 user_router = APIRouter()

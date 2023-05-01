@@ -1,14 +1,16 @@
 from pydantic import BaseModel, Field
-
+from datetime import datetime
 
 class GetUserListResponseSchema(BaseModel):
-    id: int = Field(..., description="ID")
-    email: str = Field(..., description="Email")
-    nickname: str = Field(..., description="Nickname")
-
+    Id: int = Field(..., description="ID")
+    Email: str = Field(..., description="Email")
+    NickName: str = Field(..., description="Nickname")
+    CreatedAt: datetime = Field(..., description="Created Day")
+    UpdatedAt: datetime = Field(..., description="Updated Day")
+    
     class Config:
         orm_mode = True
-
+        alias_generator = lambda string: string[0].lower() + string[1:]
 
 class CreateUserRequestSchema(BaseModel):
     email: str = Field(..., description="Email")

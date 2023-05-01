@@ -24,8 +24,8 @@ class UserService:
     ) -> List[User]:
         query = select(User)
 
-        if prev:
-            query = query.where(User.id < prev)
+        # if prev:
+        #     query = query.where(User.Id < prev)
 
         if limit > 12:
             limit = 12
@@ -41,36 +41,36 @@ class UserService:
         if password1 != password2:
             raise PasswordDoesNotMatchException
 
-        query = select(User).where(or_(User.email == email, User.nickname == nickname))
+        query = select(User).where(or_(User.Email == email, User.NickName == nickname))
         result = await session.execute(query)
         is_exist = result.scalars().first()
         if is_exist:
             raise DuplicateEmailOrNicknameException
 
-        user = User(email=email, password=password1, nickname=nickname)
+        user = User(Email=email, Password=password1, NickName=nickname)
         session.add(user)
 
     async def is_admin(self, user_id: int) -> bool:
-        result = await session.execute(select(User).where(User.id == user_id))
+        result = await session.execute(select(User).where(User.Id == user_id))
+        print("is_admin pass")
         user = result.scalars().first()
         if not user:
             return False
 
-        if user.is_admin is False:
+        if user.IsAdmin is False:
             return False
 
         return True
 
     async def login(self, email: str, password: str) -> LoginResponseSchema:
         result = await session.execute(
-            select(User).where(and_(User.email == email, password == password))
+            select(User).where(and_(User.Email == email, password == password))
         )
         user = result.scalars().first()
         if not user:
             raise UserNotFoundException
-
         response = LoginResponseSchema(
-            token=TokenHelper.encode(payload={"user_id": user.id}),
+            token=TokenHelper.encode(payload={"user_id": user.Id}),
             refresh_token=TokenHelper.encode(payload={"sub": "refresh"}),
         )
         return response
