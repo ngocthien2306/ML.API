@@ -1,31 +1,33 @@
 from sqlalchemy.orm import Session
 from app.track import models
 from app.track.models.track import Track
-
+from sqlalchemy import or_, select, and_
 from app.track.models.vehicle import Vehicle
 from core.db import Transactional, session
 class TrackingServices:
-    def checkidVehicle(self, plate_number: str) -> Vehicle:
-        vehicle = session.query(models.Vehicle).filter(Vehicle.plateNum == plate_number).first()
+    async def checkidVehicle(self, plate_number: str) -> Vehicle:
+        query = select(models.Vehicle).where(Vehicle.plateNum == plate_number)
+        vehicle = await session.execute(query)
         return vehicle
-    def checkidVehicleInParking(self, vehicleId: int) -> Track:
-        trackVehicle = session.query(models.Track).filter(
+    async def checkidVehicleInParking(self, vehicleId: int) -> Track:
+        query = select(models.Vehicle).where( and_(
             Track.vehicleId == vehicleId,
             Track.endTime == "0"
-        ).first()
+        ))
+        trackVehicle = await session.execute(query)
         return trackVehicle
-    @Transactional
-    def create_track_vehicle(self, plate_number: str,imglp_detected: str,typeTransaction: str, typeLP: str, img_detected: str, time_track:str):
+    @Transactional()
+    async def create_track_vehicle(self, plate_number: str,imglp_detected: str,typeTransaction: str, typeLP: str, img_detected: str, time_track:str):
         ## Verify that the Plate Number
         try:
-            with session.begin():
+
                 ## Create the Vehicle model
                 # Check if the face car has arrived in the parking lot 
                 ## Query vehicle in database
-                vehicleCheck = self.checkidVehicle(plate_number.plate_num,db)
+                vehicleCheck = await self.checkidVehicle(plate_number)
                 if not vehicleCheck :
                     vehicle = Vehicle(
-                        plateNum=plate_number.plate_num,
+                        plateNum=plate_number,
                         status = "AOOTEST",
                         typeTransport = typeTransaction,
                         typePlate = typeLP
@@ -34,8 +36,7 @@ class TrackingServices:
                     session.flush()
                     session.refresh(vehicle)
                     vehicleCheck= vehicle
-                track = self.checkidVehicleInParking(vehicleCheck.id,db)
-                print(track)
+                track = await self.checkidVehicleInParking(vehicleCheck.id)
                 if not track:
                     trackVehicle = Track(
                         vehicleId = vehicleCheck.id,
@@ -54,7 +55,7 @@ class TrackingServices:
 
                 session.commit()
 
-                return {"message": "Track vehicle created successfully."}
+                return {"status": "Track vehicle created successfully.","fee": 0}
         except Exception as e:
             session.rollback()
-            return {"message": "Error is"+ str(e)}  
+            return {"status": "Error is:"+ str(e),"fee": 0}  

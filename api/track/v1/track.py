@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, File, UploadFile
 from api.track.v1.request.track import CheckVehicleRequest
 
 from api.track.v1.response.track import CheckVehicleResponse
@@ -11,6 +11,7 @@ import numpy as np
 import cv2
 from deepface import DeepFace
 from datetime import datetime
+from typing import Union
 import os
 from os.path import join, dirname, isdir
 target = "/data/thinhlv/hung/Capstone/temp/"
@@ -31,30 +32,34 @@ track_services = TrackingServices()
     response_model=TrackVehicleResposeSchemas,
     responses={"400": {"model": ExceptionTrackResponseSchema}},
 )
-async def trackVehicle(request: CheckVehicleRequest):
+async def trackVehicle(platenum: str,typeTransport:str,typeLicensePlate:str, file: Union[UploadFile,None] = None):
     ## Check LP 
-    if not request.platenum or request.platenum == "": 
+    if not platenum or platenum == "": 
         return -1 ## ExceptionTrack
+
     # Check Face
-    ## Convert bytes to image --> cv2 
-    image = cv2.imdecode(np.frombuffer(request.FaceOrigin, np.uint8), cv2.IMREAD_COLOR)
+    ## Read Image --> cv2 
+    face = cv2.imdecode(np.fromstring(file.file.read(), np.uint8), cv2.IMREAD_UNCHANGED)
     ## Using model to verify
-    face_detected = DeepFace.detectFace(image, detector_backend='ssd', enforce_detection=False)
+    #face_detected = DeepFace.detectFace(image, detector_backend='ssd', enforce_detection=False)
+    face_detected =face
     ### If not detect
     ### Detected
     curDT = datetime.now()
     date_time = curDT.strftime("%m%d%Y-%H%M%S")
-    path_img_origin = target + str(request.platenum) 
-    path_img_detected = target + str(request.platenum)  
+    path_img_origin = target + str(platenum) 
+    path_img_detected = target + str(platenum)  
     if isdir(path_img_origin) == False:
         os.makedirs(path_img_origin)
     if isdir(path_img_detected) == False:     
         os.makedirs(path_img_detected)
     img_detected = path_img_detected + "/{}.jpg".format(date_time)
+    
     ## Save Image to path
     cv2.imwrite(img_detected, face_detected[:,:,::-1]*255)
     ## Using track_services to write in Database
         # face_sevices = FaceServices(img_origin, img_detected, plate_num)
         # face_sevices.add_face(embedding.model, network, img_detected, FACE_DETECTED)
         # result = face_sevices.create_track_vehicle(plate_num, img_detected, date_time, "", 0, 0)
-    result = track_services.create_track_vehicle(request.platenum,img_detected,request.typeTransport, request.typeLicensePlate,img_detected, date_time)
+    result = await track_services.create_track_vehicle(platenum,img_detected,typeTransport, typeLicensePlate,img_detected, date_time)
+    return TrackVehicleResposeSchemas(status=result["status"], fee=result["fee"])
