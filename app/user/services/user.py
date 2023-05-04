@@ -52,7 +52,7 @@ class UserService:
 
     async def is_admin(self, user_id: int) -> bool:
         result = await session.execute(select(User).where(User.Id == user_id))
-        print("is_admin pass")
+
         user = result.scalars().first()
         if not user:
             return False

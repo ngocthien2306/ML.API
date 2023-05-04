@@ -29,8 +29,8 @@ class Config(BaseSettings):
 
 
 class DevelopmentConfig(Config):
-    WRITER_DB_URL: str = f"mysql+aiomysql://root:fastapi@db:3306/fastapi"
-    READER_DB_URL: str = f"mysql+aiomysql://root:fastapi@db:3306/fastapi"
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
 
