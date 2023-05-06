@@ -29,15 +29,15 @@ class Config(BaseSettings):
 
 
 class DevelopmentConfig(Config):
-    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
-    READER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@parkingth.database.windows.net/kioskdb"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@parkingth.database.windows.net/kioskdb"
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
 
 
 class LocalConfig(Config):
-    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
-    READER_DB_URL: str = f"mssql+pymssql://deeplearning:JLNCZddjsHKahD5@parkingth.database.windows.net/kioskdb"
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@parkingth.database.windows.net/kioskdb"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@parkingth.database.windows.net/kioskdb"
 
 
 class ProductionConfig(Config):
