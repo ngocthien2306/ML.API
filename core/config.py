@@ -36,8 +36,8 @@ class DevelopmentConfig(Config):
 
 
 class LocalConfig(Config):
-    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@parkingth.database.windows.net/kioskdb"
-    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@parkingth.database.windows.net/kioskdb"
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
 
 
 class ProductionConfig(Config):

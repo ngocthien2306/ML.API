@@ -57,6 +57,7 @@ async def trackVehicle(platenum: str,typeTransport:str,typeLicensePlate:str, fil
     
     ## Save Image to path
     cv2.imwrite(img_detected, face_detected[:,:,::-1]*255)
+    img_detected = img_detected.replace(path_img_detected,"")
     ## Using track_services to write in Database
         # face_sevices = FaceServices(img_origin, img_detected, plate_num)
         # face_sevices.add_face(embedding.model, network, img_detected, FACE_DETECTED)
