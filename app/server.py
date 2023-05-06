@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, WebSocket
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -84,7 +84,23 @@ def create_app() -> FastAPI:
     init_routers(app_=app_)
     init_listeners(app_=app_)
     init_cache()
+
     return app_
 
 
 app = create_app()
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    print('Accepting client connection...')
+    await websocket.accept()
+    while True:
+        try:
+            # Wait for any message from the client
+            await websocket.receive_text()
+            # Send message to the client
+            resp = {'value': "random.uniform(0, 1)"}
+            await websocket.send_json(resp)
+        except Exception as e:
+            print('error:', e)
+            break
+    print('Bye..')
