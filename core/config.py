@@ -15,8 +15,8 @@ print(PORT)
 class Config(BaseSettings):
     ENV: str = "development"
     DEBUG: bool = True
-    APP_HOST: str = "0.0.0.0"
-    APP_PORT: int = 8001
+    APP_HOST: str = "127.0.0.1"
+    APP_PORT: int = 8000
     WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
     READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
     JWT_SECRET_KEY: str = "fastapi"

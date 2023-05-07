@@ -9,7 +9,7 @@ from app.track.services.track import TrackingServices
 ## Image Recognition
 import numpy as np
 import cv2
-from deepface import DeepFace
+
 from datetime import datetime
 from typing import Union
 import os
