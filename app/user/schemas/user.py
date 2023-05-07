@@ -10,7 +10,6 @@ class GetUserListResponseSchema(BaseModel):
     
     class Config:
         orm_mode = True
-        alias_generator = lambda string: string[0].lower() + string[1:]
 
 class CreateUserRequestSchema(BaseModel):
     email: str = Field(..., description="Email")

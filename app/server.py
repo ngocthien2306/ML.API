@@ -1,10 +1,10 @@
 from typing import List
 
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, WebSocket,WebSocketDisconnect
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
+from sockets.socket import socket_router
 from api import router
 from api.home.home import home_router
 from core.config import config
@@ -22,6 +22,7 @@ from core.helpers.cache import Cache, RedisBackend, CustomKeyMaker
 def init_routers(app_: FastAPI) -> None:
     app_.include_router(home_router)
     app_.include_router(router)
+    #app_.include_router(socket_router, prefix="/sockets", tags=["Character Recognition"])
 
 
 def init_listeners(app_: FastAPI) -> None:
@@ -81,9 +82,11 @@ def create_app() -> FastAPI:
         dependencies=[Depends(Logging)],
         middleware=make_middleware(),
     )
+    
     init_routers(app_=app_)
     init_listeners(app_=app_)
     init_cache()
+
     return app_
 
 
