@@ -6,16 +6,18 @@ from app.track.models.vehicle import Vehicle
 from core.db import Transactional, session
 class TrackingServices:
     async def checkidVehicle(self, plate_number: str) -> Vehicle:
+        print(plate_number)
         query = select(models.Vehicle).where(Vehicle.plateNum == plate_number)
         vehicle = await session.execute(query)
-        return vehicle
+        
+        return vehicle.scalars().first()
     async def checkidVehicleInParking(self, vehicleId: int) -> Track:
-        query = select(models.Vehicle).where( and_(
+        query = select(models.Track).where( and_(
             Track.vehicleId == vehicleId,
             Track.endTime == "0"
         ))
         trackVehicle = await session.execute(query)
-        return trackVehicle
+        return trackVehicle.scalars().first()
     @Transactional()
     async def create_track_vehicle(self, plate_number: str,imglp_detected: str,typeTransaction: str, typeLP: str, img_detected: str, time_track:str):
         ## Verify that the Plate Number
@@ -25,6 +27,7 @@ class TrackingServices:
                 # Check if the face car has arrived in the parking lot 
                 ## Query vehicle in database
                 vehicleCheck = await self.checkidVehicle(plate_number)
+                print(vehicleCheck)
                 if not vehicleCheck :
                     vehicle = Vehicle(
                         plateNum=plate_number,
@@ -37,13 +40,15 @@ class TrackingServices:
                     session.refresh(vehicle)
                     vehicleCheck= vehicle
                 track = await self.checkidVehicleInParking(vehicleCheck.id)
+                print(track)
+                print("track ID:", track.vehicleId)
                 if not track:
                     trackVehicle = Track(
                         vehicleId = vehicleCheck.id,
                         trackNumber = 1,
                         startTime = time_track,
                         fee = "0",
-                        siteId ="ABCTEST",
+                        siteId =1,
                         detectInFace = img_detected,
                         plateIn = imglp_detected
                     )
