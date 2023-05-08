@@ -7,8 +7,9 @@ from app.track.services.face import FaceServices
 from core.db import Transactional, session
 import cv2
 face_services = FaceServices()
-target = "/data/thinhlv/hung/Capstone/ML.API/public/images/faces/detected/"
 class TrackingServices:
+    def __init__(self, PATH_IMAGE_SAVE=None):
+        self.path_image_save = PATH_IMAGE_SAVE
     async def checkidVehicle(self, plate_number: str) -> Vehicle:
         print(plate_number)
         query = select(models.Vehicle).where(Vehicle.plateNum == plate_number)
@@ -16,6 +17,7 @@ class TrackingServices:
         
         return vehicle.scalars().first()
     async def checkidVehicleInParking(self, vehicleId: int) -> Track:
+        # Sort with Time
         query = select(models.Track).where( and_(
             Track.vehicleId == vehicleId,
             Track.endTime == "0"
@@ -26,12 +28,10 @@ class TrackingServices:
     async def create_track_vehicle(self,model,img_detected_save, plate_number: str,imglp_detected: str,typeTransaction: str, typeLP: str, img_detected: str, time_track:str, statusVehicle:str):
         ## Verify that the Plate Number
         try:
-
                 ## Create the Vehicle model
                 # Check if the face car has arrived in the parking lot 
                 ## Query vehicle in database
                 vehicleCheck = await self.checkidVehicle(plate_number)
-                print(vehicleCheck)
                 if not vehicleCheck :
                     vehicle = Vehicle(
                         plateNum=plate_number,
@@ -44,9 +44,7 @@ class TrackingServices:
                     session.refresh(vehicle)
                     vehicleCheck= vehicle
                 track = await self.checkidVehicleInParking(vehicleCheck.id)
-                print(track)
                 if not track:
-                    
                     trackVehicle = Track(
                         vehicleId = vehicleCheck.id,
                         trackNumber = 1,
@@ -59,19 +57,22 @@ class TrackingServices:
                     session.add(trackVehicle)
                 else:
                     ## Face verify
-                    img_detected_path = target+str(plate_number)+ img_detected
+                    img_detected_path = self.path_image_save+str(plate_number)+ track.detectInFace
                     print(img_detected_path)
+                    # Reshape
+                    img_detected_save= cv2.resize(img_detected_save,(112,112))
                     access =face_services.face_check_track(model,img_detected_save,img_detected_path)
-                    cv2.imwrite("/data/thinhlv/hung/Capstone/temp/test"+str(time_track)+".jpg", img_detected_save)
+                    print(access)
                     if access == True:
                         track.endTime =time_track
                         track.detectOutFace = img_detected
                         track.plateOut = imglp_detected
+                        vehicleCheck.status= statusVehicle
+                        session.refresh(vehicleCheck)
                     else:
                         vehicleCheck.status ="TEST-BLOCK" 
                 session.commit()
 
                 return {"status": str(vehicleCheck.status),"fee": 0}
         except Exception as e:
-            session.rollback()
             return {"status": "Error is:"+ str(e),"fee": 0}  
