@@ -22,7 +22,7 @@ from core.helpers.cache import Cache, RedisBackend, CustomKeyMaker
 def init_routers(app_: FastAPI) -> None:
     app_.include_router(home_router)
     app_.include_router(router)
-    #app_.include_router(socket_router, prefix="/sockets", tags=["Character Recognition"])
+    app_.include_router(socket_router)
 
 
 def init_listeners(app_: FastAPI) -> None:
