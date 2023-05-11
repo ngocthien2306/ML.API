@@ -1,5 +1,6 @@
 from enum import Enum
 class VehicleStatus(Enum):
     BLOCK = "TEST-BLOCK"
-    ACCEPT = "AOOTEST"
+    ACCEPTIN = "TEST-AOOIN"
     REPORT = "TEST-REBORT"
+    ACCEPTOUT= "TEST-AOOOUT"

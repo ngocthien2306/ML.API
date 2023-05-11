@@ -4,8 +4,11 @@ from app.track.models.track import Track
 from sqlalchemy import or_, select, and_
 from app.track.models.vehicle import Vehicle
 from app.track.services.face import FaceServices
+from app.track.enums.track import VehicleStatus
 from core.db import Transactional, session
 import cv2
+import base64
+import numpy as np
 face_services = FaceServices()
 class TrackingServices:
     def __init__(self, PATH_IMAGE_SAVE=None):
@@ -35,7 +38,7 @@ class TrackingServices:
                 if not vehicleCheck :
                     vehicle = Vehicle(
                         plateNum=plate_number,
-                        status = statusVehicle,
+                        status = VehicleStatus.ACCEPTIN,
                         typeTransport = typeTransaction,
                         typePlate = typeLP
                     )
@@ -67,12 +70,17 @@ class TrackingServices:
                         track.endTime =time_track
                         track.detectOutFace = img_detected
                         track.plateOut = imglp_detected
-                        vehicleCheck.status= statusVehicle
+                        vehicleCheck.status= VehicleStatus.ACCEPTOUT
                         session.refresh(vehicleCheck)
                     else:
-                        vehicleCheck.status ="TEST-BLOCK" 
+                        vehicleCheck.status =VehicleStatus.BLOCK 
                 session.commit()
 
                 return {"status": str(vehicleCheck.status),"fee": 0}
         except Exception as e:
             return {"status": "Error is:"+ str(e),"fee": 0}  
+    def convertbase64 (self,string64 ):
+        decoded_data = base64.b64decode(string64)
+        np_data = np.fromstring(decoded_data, np.uint8)
+        image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
+        return image

@@ -28,7 +28,7 @@ def read_plate(yolo_license_plate, im):
     LP_type = "1"
     results = yolo_license_plate(im)
     bb_list = results.pandas().xyxy[0].values.tolist()
-    print("bb_list: ",bb_list)
+
     #if len(bb_list) == 0 or len(bb_list) < 7 or len(bb_list) > 10:
     if len(bb_list) == 0:
         return "unknown"
@@ -102,7 +102,7 @@ def LP_detect(image):
                 for ct in range(0,2):
                     # Check Rotate of LP
                     lp = read_plate(yolo_license_plate, crop_img)
-                    cv2.imwrite("cropRotate.jpg", utils_rotate.deskew(crop_img, cc, ct))
+                    cv2.imwrite("/data/thinhlv/hung/Capstone/ML.API/public/temp/cropRotate.jpg", utils_rotate.deskew(crop_img, cc, ct))
                     if lp != "unknown":
                         print(lp)
                         list_read_plates.add(lp)

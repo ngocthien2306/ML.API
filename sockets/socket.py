@@ -1,4 +1,4 @@
-from fastapi import APIRouter,WebSocket,WebSocketDisconnect,status
+from fastapi import APIRouter,WebSocket,WebSocketDisconnect
 import base64
 import json
 import cv2
@@ -7,11 +7,14 @@ from fastapi.responses import JSONResponse
 
 from sockets.services.socket import LP_detect
 print("Khởi tạo socket")
+websocket_connections = []
 socket_router = APIRouter()
 @socket_router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     try:
         await websocket.accept()
+        websocket_connections.append(websocket)
+        print("Connections: ",websocket_connections )
         while True:
                 print("websocket")
                 # Nhận dữ liệu từ client
@@ -29,13 +32,14 @@ async def websocket_endpoint(websocket: WebSocket):
                 predictions =json_data['Predictions']
                 if len(predictions) != 0: 
                     listChar = LP_detect(image_np)
+                    if len(listChar) == 0 or not listChar:
+                        listChar = "None"
                     print("Chuoi bien so", listChar)
                 # Xử lý dữ liệu nhận được tại đây
                 # Gửi phản hồi về cho client
                 await websocket.send_text(listChar)
+                    
     except Exception as e:
-        print('message' ,str(e))
-        return JSONResponse(
-            status_code = status.HTTP_400_BAD_REQUEST,
-            content = { 'message' : str(e) }
-            )
+        print('Client disconnected:' ,str(e))
+        websocket_connections.remove(websocket)
+        return await websocket.close()
