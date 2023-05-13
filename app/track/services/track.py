@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy.orm import Session
 from app.track import models
 from app.track.models.track import Track
@@ -23,14 +24,16 @@ class TrackingServices:
         # Sort with Time
         query = select(models.Track).where( and_(
             Track.vehicleId == vehicleId,
-            Track.endTime == "0"
+            Track.detectOutFace == "0",
+            Track.plateOut == "0"
         ))
         trackVehicle = await session.execute(query)
         return trackVehicle.scalars().first()
     @Transactional()
-    async def create_track_vehicle(self,model,img_detected_save, plate_number: str,imglp_detected: str,typeTransaction: str, typeLP: str, img_detected: str, time_track:str, statusVehicle:str):
+    async def create_track_vehicle(self,model,img_detected_save, plate_number: str,imglp_detected: str,typeTransaction: str, typeLP: str, img_detected: str):
         ## Verify that the Plate Number
         try:
+                print(plate_number)
                 ## Create the Vehicle model
                 # Check if the face car has arrived in the parking lot 
                 ## Query vehicle in database
@@ -38,21 +41,24 @@ class TrackingServices:
                 if not vehicleCheck :
                     vehicle = Vehicle(
                         plateNum=plate_number,
-                        status = VehicleStatus.ACCEPTIN,
+                        status = VehicleStatus.ACCEPTIN.value,
                         typeTransport = typeTransaction,
                         typePlate = typeLP
                     )
                     session.add(vehicle)
+                    
                     session.flush()
                     session.refresh(vehicle)
                     vehicleCheck= vehicle
                 track = await self.checkidVehicleInParking(vehicleCheck.id)
+                print("track",track)
+                curDT = datetime.now()
                 if not track:
                     trackVehicle = Track(
                         vehicleId = vehicleCheck.id,
                         trackNumber = 1,
-                        startTime = time_track,
-                        fee = "0",
+                        startTime = curDT,
+                        fee = 0.0,
                         siteId =1,
                         detectInFace = img_detected,
                         plateIn = imglp_detected
@@ -60,20 +66,21 @@ class TrackingServices:
                     session.add(trackVehicle)
                 else:
                     ## Face verify
-                    img_detected_path = self.path_image_save+str(plate_number)+ track.detectInFace
+                    img_detected_path = track.detectInFace
                     print(img_detected_path)
                     # Reshape
                     img_detected_save= cv2.resize(img_detected_save,(112,112))
                     access =face_services.face_check_track(model,img_detected_save,img_detected_path)
                     print(access)
                     if access == True:
-                        track.endTime =time_track
+                        track.endTime =curDT
                         track.detectOutFace = img_detected
                         track.plateOut = imglp_detected
-                        vehicleCheck.status= VehicleStatus.ACCEPTOUT
+                        vehicleCheck.status= VehicleStatus.ACCEPTOUT.value
                         session.refresh(vehicleCheck)
                     else:
-                        vehicleCheck.status =VehicleStatus.BLOCK 
+                        vehicleCheck.status =VehicleStatus.BLOCK.value
+                        session.refresh(vehicleCheck)
                 session.commit()
 
                 return {"status": str(vehicleCheck.status),"fee": 0}
