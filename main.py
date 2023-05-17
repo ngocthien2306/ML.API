@@ -25,7 +25,8 @@ def main(env: str, debug: bool):
         app="app.server:app",
         host=config.APP_HOST,
         port=config.APP_PORT,
-        reload=True if config.ENV != "production" else False,
+        # reload=True if config.ENV != "production" else False,
+        reload=True,
         workers=1,
     )
 
