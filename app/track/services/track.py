@@ -10,6 +10,8 @@ from core.db import Transactional, session
 import cv2
 import base64
 import numpy as np
+from sqlalchemy import text
+from sqlalchemy.future import select
 face_services = FaceServices()
 class TrackingServices:
     def __init__(self, PATH_IMAGE_SAVE=None):
@@ -84,6 +86,19 @@ class TrackingServices:
                 session.commit()
 
                 return {"status": str(vehicleCheck.status),"fee": 0}
+        except Exception as e:
+            return {"status": "Error is:"+ str(e),"fee": 0}  
+    @Transactional()
+    async def create_track_vehicle_async(self,model,img_detected_save, plate_number: str,imglp_detected: str,typeTransaction: str, typeLP: str, img_detected: str):
+        ## Verify that the Plate Number
+        try:
+            print(plate_number)
+            result = await session.execute(
+                    text('EXEC TRACK_MANAGEMENT :Method, :PlateNum, :StatusVehicle, :TypeTransport, :TypePlate')
+                .params(Method="SaveTrack", PlateNum=plate_number, StatusVehicle=VehicleStatus.ACCEPTIN.value, TypeTransport=typeTransaction, TypePlate=typeLP)
+            )
+            results = result.scalars().all()
+            return {"status": str(results),"fee": 0}
         except Exception as e:
             return {"status": "Error is:"+ str(e),"fee": 0}  
     def convertbase64 (self,string64 ):
