@@ -63,8 +63,9 @@ async def trackVehicle(request: CheckVehicleRequest):
         ## Save Image to path  --- Save Image Detect
         cv2.imwrite(img_detected, face_detected[:,:,::-1]*255)
         cv2.imwrite(lpImage_path, lpImage)
+        print(img_detected)
+        print(lpImage_path)
         ## Using track_services to write in Database
-        print("pass")
         result = await track_services.create_track_vehicle_async(embedding.model,face_detected[:,:,::-1]*255,request.platenum,lpImage_path,request.typeTransport,request.typeLicensePlate,img_detected)
         return TrackVehicleResposeSchemas(status=result["status"], fee=result["fee"])
     except Exception as e:

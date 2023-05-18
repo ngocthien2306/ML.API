@@ -6,5 +6,5 @@ class GetPictureResponse(BaseModel):
     
 class ExceptionPictureResponse(BaseModel):
     status_code: str
-    content: str
+    content: dict
     
