@@ -9,5 +9,6 @@ class TrackVehicleResposeSchemas(BaseModel):
         fields = {
             'fee': ('fee_vnd', lambda x: '{} VND'.format(x) if x else None),
         }
-    
+
+
     

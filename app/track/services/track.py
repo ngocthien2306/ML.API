@@ -94,11 +94,99 @@ class TrackingServices:
         try:
             print(plate_number)
             result = await session.execute(
-                    text('EXEC TRACK_MANAGEMENT :Method, :PlateNum, :StatusVehicle, :TypeTransport, :TypePlate')
-                .params(Method="SaveTrack", PlateNum=plate_number, StatusVehicle=VehicleStatus.ACCEPTIN.value, TypeTransport=typeTransaction, TypePlate=typeLP)
+                text
+                (
+                    '''
+                        EXEC TRACK_MANAGEMENT 
+                            @Method=:Method, 
+                            @PlateNum=:PlateNum, 
+                            @StatusVehicle=:StatusVehicle, 
+                            @TypeTransport=:TypeTransport, 
+                            @TypePlate=:TypePlate,
+                            @SiteId=:SiteId,
+                            @TrackNumber=:TrackNumber,
+                            @Fee=:Fee,
+                            @DetectInFace=:DetectInFace,
+                            @PlateIn=:PlateIn
+                    '''
+                )
+                .params(
+                        Method="SaveTrack", 
+                        PlateNum=plate_number, 
+                        StatusVehicle=VehicleStatus.ACCEPTIN.value, 
+                        TypeTransport=typeTransaction, 
+                        TypePlate=typeLP,
+                        SiteId=19,
+                        TrackNumber=1,
+                        Fee=0,
+                        DetectInFace=img_detected,
+                        PlateIn=imglp_detected
+                    )
             )
-            results = result.scalars().all()
-            return {"status": str(results),"fee": 0}
+            results = result.fetchone()
+            print(results)
+            is_exist = results.isExistYN
+            if is_exist == 'Y':
+                # Face verify
+                detectInFace = results.faceIn
+                trackId = results.trackId
+                vehicleId = results.vehicleId
+                print()
+                img_detected_path = detectInFace
+                print(img_detected_path)
+                # Reshape
+                img_detected_save = cv2.resize(img_detected_save,(112,112))
+                access =face_services.face_check_track(model,img_detected_save,img_detected_path)
+                print(access)
+                if access == True:
+                    result = await session.execute(
+                        text
+                        (
+                            '''
+                                EXEC TRACK_MANAGEMENT 
+                                    @Method=:Method, 
+                                    @DetectOutFace=:DetectOutFace,
+                                    @PlateOut=:PlateOut,
+                                    @StatusVehicle=:StatusVehicle,
+                                    @TrackId=:TrackId,
+                                    @VehicleId=:VehicleId
+                            '''
+                        )
+                        .params(
+                                Method="UpdateStatusVehicle", 
+                                DetectOutFace=img_detected,
+                                PlateOut=imglp_detected,
+                                StatusVehicle=VehicleStatus.ACCEPTOUT.value, 
+                                TrackId = trackId,
+                                VehicleId = vehicleId
+                            )
+                    )
+                    
+                    results = result.fetchone()
+                                  
+                else:
+                    result = await session.execute(
+                        text
+                        (
+                            '''
+                                EXEC TRACK_MANAGEMENT 
+                                    @Method=:Method, 
+                                    @StatusVehicle=:StatusVehicle,
+                                    @TrackId=:TrackId,
+                                    @VehicleId=:VehicleId
+                            '''
+                        )
+                        .params(
+                                Method="UpdateStatusVehicle", 
+                                StatusVehicle=VehicleStatus.BLOCK.value, 
+                                TrackId = trackId,
+                                VehicleId = vehicleId
+                            )
+                    )
+                    
+                    results = result.fetchone()
+                    
+            return {"status": str(results.statusVehicle),"fee": 0}
         except Exception as e:
             return {"status": "Error is:"+ str(e),"fee": 0}  
     def convertbase64 (self,string64 ):
@@ -106,3 +194,4 @@ class TrackingServices:
         np_data = np.fromstring(decoded_data, np.uint8)
         image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
         return image
+    

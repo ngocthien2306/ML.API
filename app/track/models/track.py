@@ -21,3 +21,4 @@ class Track(Base):
     plateIn = Column(String(250), default=True)
     plateOut = Column(String(250), default=False)
     vehicle = relationship("Vehicle", back_populates="tracks")
+    
