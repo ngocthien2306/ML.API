@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_scoped_session,
 )
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.sql.expression import Update, Delete, Insert
@@ -50,3 +51,4 @@ session: Union[AsyncSession, async_scoped_session] = async_scoped_session(
     scopefunc=get_session_context,
 )
 Base = declarative_base()
+

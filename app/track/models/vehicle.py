@@ -6,7 +6,7 @@ from core.db import Base
 
 class Vehicle(Base):
     __tablename__ = "tblVehicle"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     plateNum =Column(String(20), default=True)
     status =Column(String(10), default=True)
     typeTransport = Column(String(10), default=True)
