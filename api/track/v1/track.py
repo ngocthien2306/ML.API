@@ -1,6 +1,5 @@
-from fastapi import APIRouter, File, UploadFile,WebSocket,status
+from fastapi import APIRouter
 from api.track.v1.request.track import CheckVehicleRequest
-from api.track.v1.response.track import CheckVehicleResponse
 from app.track.helper.embedding import Embedding
 from app.track.schemas import ExceptionTrackResponseSchema
 from app.track.schemas.track import TrackVehicleResposeSchemas
@@ -66,7 +65,12 @@ async def trackVehicle(request: CheckVehicleRequest):
         print(img_detected)
         print(lpImage_path)
         ## Using track_services to write in Database
-        result = await track_services.create_track_vehicle_async(embedding.model,face_detected[:,:,::-1]*255,request.platenum,lpImage_path,request.typeTransport,request.typeLicensePlate,img_detected)
+        result = await track_services.create_track_vehicle_async(
+            embedding.model,
+            face_detected[:,:,::-1]*255,
+            lpImage_path,
+            img_detected,
+            request)
         return TrackVehicleResposeSchemas(status=result["status"], fee=result["fee"])
     except Exception as e:
         print(str(e))

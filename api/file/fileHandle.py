@@ -1,12 +1,9 @@
-from fastapi import APIRouter, Response, status
-from fastapi.responses import JSONResponse, FileResponse
-from starlette.responses import StreamingResponse
-from PIL import Image
-from io import BytesIO
+from fastapi import APIRouter
+from fastapi.responses import FileResponse
 from app.file.schemas.file import (
-    GetPictureResponse, 
     ExceptionPictureResponse
 )
+from core.config import IMAGE_NOT_FOUND_PATH
 import os
 FOLDER_IMAGE = '/data/thinhlv/hung/Capstone/ML.API/public/images/'
 
@@ -21,7 +18,8 @@ async def get_picture(image_path: str):
     try:
         image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
         image_files = []
-
+        if image_path == '' or image_path is None:
+            return FileResponse(IMAGE_NOT_FOUND_PATH, media_type="image/jpeg")
         for dirpath, _, filenames in os.walk(FOLDER_IMAGE):
             for file in filenames:
                 _, extension = os.path.splitext(file)
@@ -30,17 +28,9 @@ async def get_picture(image_path: str):
 
         found_paths = list(filter(lambda path: image_path in path, image_files))
         if len(found_paths) == 0:
-            return ExceptionPictureResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={'status': "SERVER_ERROR_NOT_FOUND_IMAGE", 'message': "Not found image"}
-            )
+            return FileResponse(IMAGE_NOT_FOUND_PATH, media_type="image/jpeg")
 
-        print(found_paths)
-        
         # If multiple images with the same name are found, choose the first one
         return FileResponse(found_paths[0], media_type="image/jpeg")
-    except Exception as e:
-        return ExceptionPictureResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={'status': "SERVER_ERROR", 'message': str(e)}
-        )
+    except:
+        return FileResponse(IMAGE_NOT_FOUND_PATH, media_type="image/jpeg")

@@ -6,6 +6,7 @@ from sqlalchemy import or_, select, and_
 from app.track.models.vehicle import Vehicle
 from app.track.services.face import FaceServices
 from app.track.enums.track import VehicleStatus
+from api.track.v1.request.track import CheckVehicleRequest
 from core.db import Transactional, session
 import cv2
 import base64
@@ -89,10 +90,16 @@ class TrackingServices:
         except Exception as e:
             return {"status": "Error is:"+ str(e),"fee": 0}  
     @Transactional()
-    async def create_track_vehicle_async(self,model,img_detected_save, plate_number: str,imglp_detected: str,typeTransaction: str, typeLP: str, img_detected: str):
+    async def create_track_vehicle_async(self, 
+                                        model,
+                                        img_detected_save,
+                                        imglp_detected: str,
+                                        img_detected: str,
+                                        request: CheckVehicleRequest
+                                        ):
         ## Verify that the Plate Number
         try:
-            print(plate_number)
+            print(request.platenum)
             result = await session.execute(
                 text
                 (
@@ -112,11 +119,11 @@ class TrackingServices:
                 )
                 .params(
                         Method="SaveTrack", 
-                        PlateNum=plate_number, 
+                        PlateNum=request.platenum, 
                         StatusVehicle=VehicleStatus.ACCEPTIN.value, 
-                        TypeTransport=typeTransaction, 
-                        TypePlate=typeLP,
-                        SiteId=19,
+                        TypeTransport=request.typeTransport, 
+                        TypePlate=request.typeLicensePlate,
+                        SiteId=request.siteId,
                         TrackNumber=1,
                         Fee=0,
                         DetectInFace=img_detected,
@@ -138,53 +145,36 @@ class TrackingServices:
                 img_detected_save = cv2.resize(img_detected_save,(112,112))
                 access =face_services.face_check_track(model,img_detected_save,img_detected_path)
                 print(access)
-                if access == True:
-                    result = await session.execute(
-                        text
-                        (
-                            '''
-                                EXEC TRACK_MANAGEMENT 
-                                    @Method=:Method, 
-                                    @DetectOutFace=:DetectOutFace,
-                                    @PlateOut=:PlateOut,
-                                    @StatusVehicle=:StatusVehicle,
-                                    @TrackId=:TrackId,
-                                    @VehicleId=:VehicleId
-                            '''
+                if access: 
+                    status = VehicleStatus.ACCEPTOUT.value
+                else: 
+                    status = VehicleStatus.BLOCK.value
+                result = await session.execute(
+                    text
+                    (
+                        '''
+                            EXEC TRACK_MANAGEMENT 
+                                @Method=:Method, 
+                                @DetectOutFace=:DetectOutFace,
+                                @PlateOut=:PlateOut,
+                                @StatusVehicle=:StatusVehicle,
+                                @TrackId=:TrackId,
+                                @VehicleId=:VehicleId
+                        '''
+                    )
+                    .params(
+                            Method="UpdateStatusVehicle", 
+                            DetectOutFace=img_detected,
+                            PlateOut=imglp_detected,
+                            StatusVehicle=status, 
+                            TrackId=trackId,
+                            VehicleId=vehicleId
                         )
-                        .params(
-                                Method="UpdateStatusVehicle", 
-                                DetectOutFace=img_detected,
-                                PlateOut=imglp_detected,
-                                StatusVehicle=VehicleStatus.ACCEPTOUT.value, 
-                                TrackId = trackId,
-                                VehicleId = vehicleId
-                            )
                     )
                     
-                    results = result.fetchone()
-                                  
-                else:
-                    result = await session.execute(
-                        text
-                        (
-                            '''
-                                EXEC TRACK_MANAGEMENT 
-                                    @Method=:Method, 
-                                    @StatusVehicle=:StatusVehicle,
-                                    @TrackId=:TrackId,
-                                    @VehicleId=:VehicleId
-                            '''
-                        )
-                        .params(
-                                Method="UpdateStatusVehicle", 
-                                StatusVehicle=VehicleStatus.BLOCK.value, 
-                                TrackId = trackId,
-                                VehicleId = vehicleId
-                            )
-                    )
-                    
-                    results = result.fetchone()
+                results = result.fetchone()
+                
+
                     
             return {"status": str(results.statusVehicle),"fee": 0}
         except Exception as e:

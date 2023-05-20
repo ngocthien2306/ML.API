@@ -8,6 +8,7 @@ PORT = os.environ.get("PORT")
 DRIVER = os.environ.get("DRIVER")
 USERNAME = os.environ.get("USERNAMEMMSQL")
 PASS = os.environ.get("PASSMMSQL")
+IMAGE_NOT_FOUND_PATH = '/data/thinhlv/thiennn/deeplearning/vecteezy_icon-image-not-found-vector_.jpg'
 print(SERVERNAME)
 print(DBNAME)
 print(PORT)
