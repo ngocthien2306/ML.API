@@ -1,9 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from api.track.v1.request.track import CheckVehicleRequest
 from app.track.helper.embedding import Embedding
 from app.track.schemas import ExceptionTrackResponseSchema
 from app.track.schemas.track import TrackVehicleResposeSchemas
 from app.track.services.track import TrackingServices
+from fastapi.responses import JSONResponse
 ## Image Recognition
 import base64
 import numpy as np
@@ -71,7 +72,8 @@ async def trackVehicle(request: CheckVehicleRequest):
             lpImage_path,
             img_detected,
             request)
+        print(result["status"])
         return TrackVehicleResposeSchemas(status=result["status"], fee=result["fee"])
     except Exception as e:
         print(str(e))
-        return TrackVehicleResposeSchemas(status=str(e), fee="fee")
+        return JSONResponse(content={"error": str(e)}, status_code=400)
