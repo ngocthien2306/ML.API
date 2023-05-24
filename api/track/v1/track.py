@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
-from api.track.v1.request.track import CheckVehicleRequest
+from api.track.v1.request.track import CheckVehicleReport, CheckVehicleRequest
 from app.track.helper.embedding import Embedding
 from app.track.schemas import ExceptionTrackResponseSchema
-from app.track.schemas.track import TrackVehicleResposeSchemas
+from app.track.schemas.track import TrackReportResposeSchemas, TrackVehicleResposeSchemas
 from app.track.services.track import TrackingServices
 from fastapi.responses import JSONResponse
 ## Image Recognition
@@ -74,6 +74,20 @@ async def trackVehicle(request: CheckVehicleRequest):
             request)
         print(result["status"])
         return TrackVehicleResposeSchemas(status=result["status"], fee=result["fee"])
+    except Exception as e:
+        print(str(e))
+        return JSONResponse(content={"error": str(e)}, status_code=400)
+@track_router.post(
+    "/trackingReports",
+    response_model=TrackReportResposeSchemas,
+    responses={"400": {"model": ExceptionTrackResponseSchema}},
+)
+async def trackVehicle(request: CheckVehicleReport):
+    try:
+        result = await track_services.create_track_report(request.siteId,request.platenum,request.typeTransport,request.typeLicensePlate,request.stringFace,request.stringlp)
+        if result == True:
+            return TrackReportResposeSchemas(status=True)
+        return TrackReportResposeSchemas(status=False)
     except Exception as e:
         print(str(e))
         return JSONResponse(content={"error": str(e)}, status_code=400)

@@ -9,6 +9,7 @@ class TrackVehicleResposeSchemas(BaseModel):
         fields = {
             'fee': ('fee_vnd', lambda x: '{} VND'.format(x) if x else None),
         }
-
+class TrackReportResposeSchemas(BaseModel):
+    status: str = Field(..., description="Stutus Report in Parking")
 
     

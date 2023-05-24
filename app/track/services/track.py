@@ -184,4 +184,39 @@ class TrackingServices:
         np_data = np.fromstring(decoded_data, np.uint8)
         image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
         return image
-    
+    async def create_track_report (self,siteid,platenumber,typeVehicle,typeLp,img_detected, imglp_detected) -> bool:
+        result = await session.execute(
+                    text
+                    (
+                        ''' 
+                            DECLARE @ErrorMessage NVARCHAR(500);
+                            EXEC SP_UPDATE_TRACK_REPORT 
+                                @Platenum=:PlateNumber,
+                                @TypeTransport=:TypeTransport,
+                                @TypePlate=:TypePlate,
+                                @SiteId=:SiteId,
+                                @DetectOutFace=:DetectOutFace,
+                                @PlateOut=:PlateOut,
+                                @Status=:StatusVehicle,
+                                @ErrorMessage = @ErrorMessage OUTPUT;
+                            SELECT @ErrorMessage AS ErrorMessage;
+                        '''
+                    )
+                    .params(
+                            PlateNumber = platenumber,
+                            TypeTransport = typeVehicle,
+                            TypePlate = typeLp,
+                            SiteId = siteid,
+                            DetectOutFace=img_detected,
+                            PlateOut=imglp_detected,
+                            StatusVehicle=VehicleStatus.REPORT.value, 
+
+                        )
+                )
+                    
+        error = result.fetchone()
+        print("Result",type(error))
+        print("Result",error.ErrorMessage)
+        if error is None:
+            return True
+        return False
