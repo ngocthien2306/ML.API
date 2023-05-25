@@ -9,6 +9,7 @@ from app.track.enums.track import VehicleStatus
 from api.track.v1.request.track import CheckVehicleRequest
 from core.db import Transactional, session
 import cv2
+import os
 import base64
 import numpy as np
 from sqlalchemy import text
@@ -184,7 +185,11 @@ class TrackingServices:
         np_data = np.fromstring(decoded_data, np.uint8)
         image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
         return image
+    @Transactional()
     async def create_track_report (self,siteid,platenumber,typeVehicle,typeLp,img_detected, imglp_detected) -> bool:
+        print(siteid,platenumber,typeVehicle,typeLp)
+        # Save Image data
+        
         result = await session.execute(
                     text
                     (
@@ -213,10 +218,16 @@ class TrackingServices:
 
                         )
                 )
-                    
+                  
         error = result.fetchone()
         print("Result",type(error))
         print("Result",error.ErrorMessage)
-        if error is None:
+        if error.ErrorMessage is None:
             return True
-        return False
+        # else rollback
+        else:
+            if os.path.exists(imglp_detected):
+                os.remove(imglp_detected)
+            if os.path.exists(imglp_detected):
+                os.remove(imglp_detected)
+            return False
