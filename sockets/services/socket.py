@@ -8,8 +8,8 @@ import os
 import sockets.function.helper as helper
 
 import math
-yolo_LP_detect = torch.hub.load('ultralytics/yolov5', 'custom', path='/data/thinhlv/hung/Capstone/ML.API/sockets/models/bestlp640.pt', force_reload=False )
-yolo_license_plate = torch.hub.load('ultralytics/yolov5', 'custom', path='/data/thinhlv/hung/Capstone/ML.API/sockets/models/best_orc.pt', force_reload=False)
+yolo_LP_detect = torch.hub.load('ultralytics/yolov5', 'custom', path='sockets/models/bestlp640.pt', force_reload=False )
+yolo_license_plate = torch.hub.load('ultralytics/yolov5', 'custom', path='sockets/models/best_orc.pt', force_reload=False)
 
 yolo_license_plate.conf = 0.60
 
