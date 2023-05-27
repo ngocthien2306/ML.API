@@ -11,6 +11,7 @@ from core.exceptions import (
     UserNotFoundException,
 )
 from core.utils.token_helper import TokenHelper
+from sockets.services.socket import LP_detect
 
 
 class UserService:
@@ -74,3 +75,9 @@ class UserService:
             refresh_token=TokenHelper.encode(payload={"sub": "refresh"}),
         )
         return response
+    async def verify_lp(self, imagelp) -> str:
+        lp = LP_detect(imagelp)
+        first_lp = next(iter(lp), None)
+        if first_lp is None:
+            return "Not Found"
+        return first_lp
