@@ -102,7 +102,7 @@ def LP_detect(image):
                 for ct in range(0,2):
                     # Check Rotate of LP
                     lp = read_plate(yolo_license_plate, crop_img)
-                    cv2.imwrite("/data/thinhlv/hung/Capstone/ML.API/public/temp/cropRotate.jpg", utils_rotate.deskew(crop_img, cc, ct))
+                    cv2.imwrite("public/temp/cropRotate.jpg", utils_rotate.deskew(crop_img, cc, ct))
                     if lp != "unknown":
                         print(lp)
                         list_read_plates.add(lp)
