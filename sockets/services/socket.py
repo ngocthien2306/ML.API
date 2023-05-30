@@ -8,8 +8,8 @@ import os
 import sockets.function.helper as helper
 
 import math
-yolo_LP_detect = torch.hub.load('ultralytics/yolov5', 'custom', path='/data/thinhlv/hung/Capstone/ML.API/sockets/models/bestlp640.pt', force_reload=False )
-yolo_license_plate = torch.hub.load('ultralytics/yolov5', 'custom', path='/data/thinhlv/hung/Capstone/ML.API/sockets/models/best_orc.pt', force_reload=False)
+yolo_LP_detect = torch.hub.load('ultralytics/yolov5', 'custom', path='sockets/models/bestlp640.pt', force_reload=False )
+yolo_license_plate = torch.hub.load('ultralytics/yolov5', 'custom', path='sockets/models/best_orc.pt', force_reload=False)
 
 yolo_license_plate.conf = 0.60
 
@@ -102,7 +102,7 @@ def LP_detect(image):
                 for ct in range(0,2):
                     # Check Rotate of LP
                     lp = read_plate(yolo_license_plate, crop_img)
-                    cv2.imwrite("/data/thinhlv/hung/Capstone/ML.API/public/temp/cropRotate.jpg", utils_rotate.deskew(crop_img, cc, ct))
+                    cv2.imwrite("public/temp/cropRotate.jpg", utils_rotate.deskew(crop_img, cc, ct))
                     if lp != "unknown":
                         print(lp)
                         list_read_plates.add(lp)
