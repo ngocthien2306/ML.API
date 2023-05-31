@@ -9,6 +9,7 @@ from app.track.enums.track import VehicleStatus
 from api.track.v1.request.track import CheckVehicleRequest
 from core.db import Transactional, session
 import cv2
+import os
 import base64
 import numpy as np
 from sqlalchemy import text
@@ -184,4 +185,49 @@ class TrackingServices:
         np_data = np.fromstring(decoded_data, np.uint8)
         image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
         return image
-    
+    @Transactional()
+    async def create_track_report (self,siteid,platenumber,typeVehicle,typeLp,img_detected, imglp_detected) -> bool:
+        print(siteid,platenumber,typeVehicle,typeLp)
+        # Save Image data
+        
+        result = await session.execute(
+                    text
+                    (
+                        ''' 
+                            DECLARE @ErrorMessage NVARCHAR(500);
+                            EXEC SP_UPDATE_TRACK_REPORT 
+                                @Platenum=:PlateNumber,
+                                @TypeTransport=:TypeTransport,
+                                @TypePlate=:TypePlate,
+                                @SiteId=:SiteId,
+                                @DetectOutFace=:DetectOutFace,
+                                @PlateOut=:PlateOut,
+                                @Status=:StatusVehicle,
+                                @ErrorMessage = @ErrorMessage OUTPUT;
+                            SELECT @ErrorMessage AS ErrorMessage;
+                        '''
+                    )
+                    .params(
+                            PlateNumber = platenumber,
+                            TypeTransport = typeVehicle,
+                            TypePlate = typeLp,
+                            SiteId = siteid,
+                            DetectOutFace=img_detected,
+                            PlateOut=imglp_detected,
+                            StatusVehicle=VehicleStatus.REPORT.value, 
+
+                        )
+                )
+                  
+        error = result.fetchone()
+        print("Result",type(error))
+        print("Result",error.ErrorMessage)
+        if error.ErrorMessage is None:
+            return True
+        # else rollback
+        else:
+            if os.path.exists(imglp_detected):
+                os.remove(imglp_detected)
+            if os.path.exists(imglp_detected):
+                os.remove(imglp_detected)
+            return False

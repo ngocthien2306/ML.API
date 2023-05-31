@@ -13,13 +13,18 @@ socket_router = APIRouter()
 async def websocket_endpoint(websocket: WebSocket):
     try:
         await websocket.accept()
+        print("Test")
         websocket_connections.append(websocket)
-        print("Connections: ",websocket_connections )
+        print("Connections: ",websocket_connections[0].client.host )
         while True:
                 print("websocket")
-                # Nhận dữ liệu từ client
-                data = await websocket.receive_text()
-                
+                try:
+                    # Nhận dữ liệu từ client
+                    data = await websocket.receive_text()
+                except WebSocketDisconnect as e:
+                    print("Client disconnected", str(e))
+                    websocket_connections.remove(websocket)
+                    break
                 # Parse dữ liệu nhận được thành đối tượng JSON
                 json_data = json.loads(data)
                 # Lấy dữ liệu ảnh từ trường "Image"
@@ -41,5 +46,5 @@ async def websocket_endpoint(websocket: WebSocket):
                     
     except Exception as e:
         print('Client disconnected:' ,str(e))
-        websocket_connections.remove(websocket)
-        return await websocket.close()
+        return await websocket_connections.remove(websocket)
+        #return await websocket.close()
