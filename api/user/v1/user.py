@@ -4,8 +4,8 @@ import numpy as np
 import cv2
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
-from api.user.v1.request.user import LoginRequest, VerifylicensePlateRequest
-from api.user.v1.response.user import LoginResponse, VerifylicensePlateResponse
+from api.user.v1.request.user import LoginRequest, VerifyIdVietNameRequest, VerifylicensePlateRequest
+from api.user.v1.response.user import LoginResponse, VerifylIdVietNamResponse, VerifylicensePlateResponse
 from app.user.schemas import (
     ExceptionResponseSchema,
     GetUserListResponseSchema,
@@ -67,10 +67,33 @@ async def verify(request: VerifylicensePlateRequest):
         decoded_data = base64.b64decode(request.stringlp)
         np_data = np.fromstring(decoded_data, np.uint8)
         image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
+        
+        
         # Lp returned to LP Dictionary so Check accuracy here
         lp = await UserService().verify_lp(imagelp=image)
         
         return {"license": str(lp)}
+    except Exception as e:
+        print(str(e))
+        return JSONResponse(content={"error": str(e)}, status_code=400)
+@user_router.post(
+    "/verifyidvn",
+    response_model=VerifylIdVietNamResponse,
+    responses={"404": {"model": ExceptionResponseSchema}},
+)    
+async def verify(request: VerifyIdVietNameRequest):
+    if not request.stringidvn or request.stringidvn == "": 
+            return {"id": "Not Found"} ## ExceptionTrack
+    try:
+        # Convert string to Image
+        decoded_data = base64.b64decode(request.stringidvn)
+        np_data = np.fromstring(decoded_data, np.uint8)
+        image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
+        image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+        # Lp returned to LP Dictionary so Check accuracy here
+        cv2.imwrite("/data/thinhlv/hung/Capstone/cccd_detect_character/testImageAPi.jpg", image)
+        result = await UserService().verify_id(imageId=image)
+        return {"id": str(result)}
     except Exception as e:
         print(str(e))
         return JSONResponse(content={"error": str(e)}, status_code=400)

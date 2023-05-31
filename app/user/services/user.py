@@ -1,6 +1,7 @@
 from typing import Optional, List
 
 from sqlalchemy import or_, select, and_
+from app.user.helper.detectid.detect import yoloDetect
 
 from app.user.models import User
 from app.user.schemas.user import LoginResponseSchema
@@ -16,7 +17,7 @@ from sockets.services.socket import LP_detect
 
 class UserService:
     def __init__(self):
-        ...
+        self.id_verify =yoloDetect()
 
     async def get_user_list(
         self,
@@ -81,3 +82,8 @@ class UserService:
         if first_lp is None:
             return "Not Found"
         return first_lp
+    async def verify_id(self, imageId)-> str:
+        stringId = self.id_verify.detect_id(imageId)
+        if stringId is None or stringId == 'Not Found':
+            return "Not Found"
+        return stringId

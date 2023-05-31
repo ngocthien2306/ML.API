@@ -7,3 +7,5 @@ class LoginRequest(BaseModel):
 
 class VerifylicensePlateRequest(BaseModel):
     stringlp : str =  Field(..., description="License Plate Image")
+class VerifyIdVietNameRequest(BaseModel):
+    stringidvn : str =  Field(..., description="Id VietName Image")
