@@ -2,7 +2,9 @@ from typing import List
 import base64
 import numpy as np
 import cv2
-from fastapi import APIRouter, Depends, Query
+import io
+from PIL import Image
+from fastapi import APIRouter, Depends, Query, UploadFile,File
 from fastapi.responses import JSONResponse
 from api.user.v1.request.user import LoginRequest, VerifyIdVietNameRequest, VerifylicensePlateRequest
 from api.user.v1.response.user import LoginResponse, VerifylIdVietNamResponse, VerifylicensePlateResponse
@@ -87,12 +89,31 @@ async def verify(request: VerifyIdVietNameRequest):
     try:
         # Convert string to Image
         decoded_data = base64.b64decode(request.stringidvn)
-        np_data = np.fromstring(decoded_data, np.uint8)
-        image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
-        image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
-        # Lp returned to LP Dictionary so Check accuracy here
-        cv2.imwrite("/data/thinhlv/hung/Capstone/cccd_detect_character/testImageAPi.jpg", image)
-        result = await UserService().verify_id(imageId=image)
+        # np_data = np.fromstring(decoded_data, np.uint8)
+        # image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
+        # image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+        image_io = io.BytesIO(decoded_data)
+        image = Image.open(image_io)
+        img = np.asarray(image)
+        result = await UserService().verify_id(imageId=img)
+        return {"id": str(result)}
+    except Exception as e:
+        print(str(e))
+        return JSONResponse(content={"error": str(e)}, status_code=400)
+    
+@user_router.post(
+    "/verifyidvn2"
+)    
+async def verify(file: UploadFile = File(...)):
+    extension = file.filename.split(".")[-1] in ("jpg", "jpeg", "png")
+    if not extension:
+        return "Image must be jpg or png format!"
+
+    
+    try:
+        image = UserService().read_image_file(await file.read())
+        img = np.asarray(image)
+        result = await UserService().verify_id(imageId=img)
         return {"id": str(result)}
     except Exception as e:
         print(str(e))

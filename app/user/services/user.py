@@ -1,8 +1,8 @@
 from typing import Optional, List
-
+from PIL import Image
 from sqlalchemy import or_, select, and_
 from app.user.helper.detectid.detect import yoloDetect
-
+from io import BytesIO
 from app.user.models import User
 from app.user.schemas.user import LoginResponseSchema
 from core.db import Transactional, session
@@ -87,3 +87,7 @@ class UserService:
         if stringId is None or stringId == 'Not Found':
             return "Not Found"
         return stringId
+    def read_image_file(self,file) -> Image.Image:
+        image = Image.open(BytesIO(file))
+
+        return image
