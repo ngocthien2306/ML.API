@@ -51,7 +51,10 @@ class UserService:
 
         user = User(Email=email, Password=password1, NickName=nickname)
         session.add(user)
-
+    async def register_user(
+        self, cccd: str, fullname: str, Gender: str, imageId, imageFace
+    ) -> bool:
+        return True
     async def is_admin(self, user_id: int) -> bool:
         result = await session.execute(select(User).where(User.Id == user_id))
 
@@ -84,6 +87,11 @@ class UserService:
         return first_lp
     async def verify_id(self, imageId)-> str:
         stringId = self.id_verify.detect_id(imageId)
+        if stringId is None or stringId == 'Not Found':
+            return "Not Found"
+        return stringId
+    async def verify_idImage(self, imageId)-> str:
+        stringId = self.id_verify.detect_idImage(imageId)
         if stringId is None or stringId == 'Not Found':
             return "Not Found"
         return stringId
