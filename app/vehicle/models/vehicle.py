@@ -2,8 +2,6 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 
 from core.db import Base
-
-
 class Vehicle(Base):
     __tablename__ = "tblVehicle"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)

@@ -33,3 +33,13 @@ class FaceServices:
         except Exception as e:
             print(e)
             return False
+    def face_check_user(self,model, img_verify, image_db, threshor=1.4) -> bool:
+        try:
+            e_verify = self.embedding_face(model, img_verify)
+            e_db = self.embedding_face(model, image_db)
+            dist = euclid_distance(e_db, e_verify)
+            print("Accuracy",dist)
+            return  True if dist < threshor else False
+        except Exception as e:
+            print(e)
+            return False

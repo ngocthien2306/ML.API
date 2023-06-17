@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.track import models
+from app.track.models.userPhoto import UserPhoto
 from app.track.models.track import Track
 from sqlalchemy import or_, select, and_
 from app.track.models.vehicle import Vehicle
@@ -12,6 +13,9 @@ import cv2
 import os
 import base64
 import numpy as np
+from PIL import Image
+import io
+from deepface import DeepFace
 from sqlalchemy import text
 from sqlalchemy.future import select
 face_services = FaceServices()
@@ -98,86 +102,109 @@ class TrackingServices:
                                         img_detected: str,
                                         request: CheckVehicleRequest
                                         ):
+
+        
+        
         ## Verify that the Plate Number
         try:
-            print(request.platenum)
-            result = await session.execute(
-                text
-                (
-                    '''
-                        EXEC TRACK_MANAGEMENT 
-                            @Method=:Method, 
-                            @PlateNum=:PlateNum, 
-                            @StatusVehicle=:StatusVehicle, 
-                            @TypeTransport=:TypeTransport, 
-                            @TypePlate=:TypePlate,
-                            @SiteId=:SiteId,
-                            @TrackNumber=:TrackNumber,
-                            @Fee=:Fee,
-                            @DetectInFace=:DetectInFace,
-                            @PlateIn=:PlateIn
-                    '''
-                )
-                .params(
-                        Method="SaveTrack", 
-                        PlateNum=request.platenum, 
-                        StatusVehicle=VehicleStatus.ACCEPTIN.value, 
-                        TypeTransport=request.typeTransport, 
-                        TypePlate=request.typeLicensePlate,
-                        SiteId=request.siteId,
-                        TrackNumber=1,
-                        Fee=0,
-                        DetectInFace=img_detected,
-                        PlateIn=imglp_detected
-                    )
-            )
-            results = result.fetchone()
-            print(results)
-            is_exist = results.isExistYN
-            if is_exist == 'Y':
-                # Face verify
-                detectInFace = results.faceIn
-                trackId = results.trackId
-                vehicleId = results.vehicleId
-                print()
-                img_detected_path = detectInFace
-                print(img_detected_path)
-                # Reshape
-                img_detected_save = cv2.resize(img_detected_save,(112,112))
-                access =face_services.face_check_track(model,img_detected_save,img_detected_path)
-                print(access)
-                if access: 
-                    status = VehicleStatus.ACCEPTOUT.value
-                else: 
-                    status = VehicleStatus.BLOCK.value
+                print(request.platenum)
+                    ## Check if the vehicle which is belonging to any User
+            # user_photo = None
+            # user_photo = await self.get_image_user2(request.platenum)
+            # if user_photo is not None:
+            #     byte_stream = io.BytesIO(user_photo)
+            #     image = Image.open(byte_stream)
+            #     image_array = np.asarray(image) 
+            #     image_array = cv2.cvtColor(image_array,cv2.COLOR_RGB2BGR)
+            #     ## Verify Image Face Identification
+            #     img_detected_save = cv2.resize(img_detected_save,(112,112))
+            #     face_user_db = DeepFace.detectFace(image_array, detector_backend='ssd', enforce_detection=True)
+            #     resize_face_user = cv2.resize(face_user_db,(112,112))
+            #     access =face_services.face_check_user(model,img_detected_save,resize_face_user)
+            #     print("Face Identification: ", True)
+            #     print("User_photo: ", access)
+            #     if access == False:
+            #         return {"status": str(VehicleStatus.BLOCK.value),"fee": 0}
+            #     else:
+            #         return {"status": str(VehicleStatus.ACCEPTIN.value),"fee": 1}
+            # else:
                 result = await session.execute(
-                    text
-                    (
-                        '''
-                            EXEC TRACK_MANAGEMENT 
-                                @Method=:Method, 
-                                @DetectOutFace=:DetectOutFace,
-                                @PlateOut=:PlateOut,
-                                @StatusVehicle=:StatusVehicle,
-                                @TrackId=:TrackId,
-                                @VehicleId=:VehicleId
-                        '''
-                    )
-                    .params(
-                            Method="UpdateStatusVehicle", 
-                            DetectOutFace=img_detected,
-                            PlateOut=imglp_detected,
-                            StatusVehicle=status, 
-                            TrackId=trackId,
-                            VehicleId=vehicleId
+                        text
+                        (
+                            '''
+                                EXEC TRACK_MANAGEMENT 
+                                    @Method=:Method, 
+                                    @PlateNum=:PlateNum, 
+                                    @StatusVehicle=:StatusVehicle, 
+                                    @TypeTransport=:TypeTransport, 
+                                    @TypePlate=:TypePlate,
+                                    @SiteId=:SiteId,
+                                    @TrackNumber=:TrackNumber,
+                                    @Fee=:Fee,
+                                    @DetectInFace=:DetectInFace,
+                                    @PlateIn=:PlateIn
+                            '''
                         )
+                        .params(
+                                Method="SaveTrack", 
+                                PlateNum=request.platenum, 
+                                StatusVehicle=VehicleStatus.ACCEPTIN.value, 
+                                TypeTransport=request.typeTransport, 
+                                TypePlate=request.typeLicensePlate,
+                                SiteId=request.siteId,
+                                TrackNumber=1,
+                                Fee=0,
+                                DetectInFace=img_detected,
+                                PlateIn=imglp_detected
+                            )
                     )
-                    
                 results = result.fetchone()
-                
-
+                print(results)
+                is_exist = results.isExistYN
+                if is_exist == 'Y':
+                    # Face verify
+                    detectInFace = results.faceIn
+                    trackId = results.trackId
+                    vehicleId = results.vehicleId
+                    print()
+                    img_detected_path = detectInFace
+                    print(img_detected_path)
+                    # Reshape
+                    img_detected_save = cv2.resize(img_detected_save,(112,112))
+                    access =face_services.face_check_track(model,img_detected_save,img_detected_path)
+                    print(access)
+                    if access: 
+                        status = VehicleStatus.ACCEPTOUT.value
+                    else: 
+                        status = VehicleStatus.BLOCK.value
+                    result = await session.execute(
+                        text
+                        (
+                            '''
+                                EXEC TRACK_MANAGEMENT 
+                                    @Method=:Method, 
+                                    @DetectOutFace=:DetectOutFace,
+                                    @PlateOut=:PlateOut,
+                                    @StatusVehicle=:StatusVehicle,
+                                    @TrackId=:TrackId,
+                                    @VehicleId=:VehicleId
+                            '''
+                        )
+                        .params(
+                                Method="UpdateStatusVehicle", 
+                                DetectOutFace=img_detected,
+                                PlateOut=imglp_detected,
+                                StatusVehicle=status, 
+                                TrackId=trackId,
+                                VehicleId=vehicleId
+                            )
+                        )
+                        
+                    results = result.fetchone()
                     
-            return {"status": str(results.statusVehicle),"fee": 0}
+
+                        
+                return {"status": str(results.statusVehicle),"fee": 0}
         except Exception as e:
             return {"status": "Error is:"+ str(e),"fee": 0}  
     def convertbase64 (self,string64 ):
@@ -231,3 +258,22 @@ class TrackingServices:
             if os.path.exists(imglp_detected):
                 os.remove(imglp_detected)
             return False
+    @Transactional()
+    async def get_user_vehicle(self,platenum):
+        query = select(models.Vehicle).where(Vehicle.plateNum == platenum)
+        vehicle = await session.execute(query)
+        
+        return vehicle.scalars().first()
+    @Transactional()
+    async def get_image_user(self,userid):
+        query = select(UserPhoto).where(UserPhoto.UserID == userid)
+        vehicle = await session.execute(query)
+        
+        return vehicle.scalars().first()
+    @Transactional()
+    async def get_image_user2(self,platenum):
+        query = select(UserPhoto.TakenPhoto).where(and_(UserPhoto.UserID == Vehicle.userId,
+                                                        Vehicle.plateNum == platenum) )
+        face_db = await session.execute(query)
+        
+        return face_db.scalars().first()
