@@ -1,7 +1,8 @@
 from typing import Optional, List
-
+from PIL import Image
 from sqlalchemy import or_, select, and_
-
+from app.user.helper.detectid.detect import yoloDetect
+from io import BytesIO
 from app.user.models import User
 from app.user.schemas.user import LoginResponseSchema
 from core.db import Transactional, session
@@ -16,7 +17,7 @@ from sockets.services.socket import LP_detect
 
 class UserService:
     def __init__(self):
-        ...
+        self.id_verify =yoloDetect()
 
     async def get_user_list(
         self,
@@ -50,7 +51,10 @@ class UserService:
 
         user = User(Email=email, Password=password1, NickName=nickname)
         session.add(user)
-
+    async def register_user(
+        self, cccd: str, fullname: str, Gender: str, imageId, imageFace
+    ) -> bool:
+        return True
     async def is_admin(self, user_id: int) -> bool:
         result = await session.execute(select(User).where(User.Id == user_id))
 
@@ -81,3 +85,17 @@ class UserService:
         if first_lp is None:
             return "Not Found"
         return first_lp
+    async def verify_id(self, imageId)-> str:
+        stringId = self.id_verify.detect_id(imageId)
+        if stringId is None or stringId == 'Not Found':
+            return "Not Found"
+        return stringId
+    async def verify_idImage(self, imageId)-> str:
+        stringId = self.id_verify.detect_idImage(imageId)
+        if stringId is None or stringId == 'Not Found':
+            return "Not Found"
+        return stringId
+    def read_image_file(self,file) -> Image.Image:
+        image = Image.open(BytesIO(file))
+
+        return image
