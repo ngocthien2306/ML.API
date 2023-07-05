@@ -49,8 +49,21 @@ class yoloDetect:
                         return id
                     return UserEnum.STATUS_CCCD_4.value
             else:
-                return UserEnum.STATUS_CCCD_4.value + " " + str(len(results[0].boxes.data))
+                return UserEnum.STATUS_CCCD_4.value
         except Exception as e:
             print(e)
             return str(e)
+    def detect_idImage(self, image) -> str:
+        try:
+            image = Image.fromarray(image)
+            image.save("/data/thinhlv/hung/Capstone/ML.API/testImage2.png")
+            cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            cv2.imwrite("/data/thinhlv/hung/Capstone/ML.API/testImage.jpg", cv2_image)
+            id = self.text_recognition_model.predict(cv2_image)
+            print(id)
+            return id
+        except Exception as e:
+            print(e)
+            return str(e)
+
     

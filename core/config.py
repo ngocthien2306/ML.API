@@ -17,9 +17,9 @@ class Config(BaseSettings):
     ENV: str = "development"
     DEBUG: bool = True
     APP_HOST: str = "127.0.0.1"
-    APP_PORT: int = 8005
-    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
-    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
+    APP_PORT: int = 8001
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@26.236.244.191/KIOSK"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@26.236.244.191/KIOSK"
     JWT_SECRET_KEY: str = "fastapi"
     JWT_ALGORITHM: str = "HS256"
     SENTRY_SDN: str = None
@@ -37,14 +37,14 @@ class DevelopmentConfig(Config):
 
 
 class LocalConfig(Config):
-    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
-    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@26.236.244.191/KIOSK"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@26.236.244.191/KIOSK"
 
 
 class ProductionConfig(Config):
     DEBUG: str = False
-    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
-    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
+    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@26.236.244.191/KIOSK"
+    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@26.236.244.191/KIOSK"
 
 
 def get_config():

@@ -8,9 +8,16 @@ import os
 import sockets.function.helper as helper
 
 import math
-yolo_LP_detect = torch.hub.load('ultralytics/yolov5', 'custom', path='sockets/models/bestlp640.pt', force_reload=False )
-yolo_license_plate = torch.hub.load('ultralytics/yolov5', 'custom', path='sockets/models/best_orc.pt', force_reload=False)
+torch.cuda.empty_cache()
+device = torch.device('cpu')
+# Load YOLOv5 model for license plate detection
+yolo_LP_detect = torch.hub.load('ultralytics/yolov5', 'custom', path='sockets/models/bestlp640.pt', force_reload=True)
+yolo_LP_detect.to(device)
+# Load YOLOv5 model for license plate recognition
+yolo_license_plate = torch.hub.load('ultralytics/yolov5', 'custom', path='sockets/models/best_orc.pt', force_reload=True)
+yolo_license_plate.to(device)
 
+# Kiểm tra xem mô hình đang chạy trên CUDA device nào
 yolo_license_plate.conf = 0.60
 
 listlb = ['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','K','L','M', 'N','P','S','T','U','V','X','Y','Z','0']

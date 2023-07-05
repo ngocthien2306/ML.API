@@ -11,4 +11,5 @@ class Vehicle(Base):
     status =Column(String(10), default=True)
     typeTransport = Column(String(10), default=True)
     typePlate = Column(String(10), default=True)
+    userId = Column(String(20), default=False)
     tracks = relationship("Track", back_populates="vehicle") # tạo quan hệ
