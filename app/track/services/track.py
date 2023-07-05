@@ -102,15 +102,7 @@ class TrackingServices:
                                         img_detected: str,
                                         request: CheckVehicleRequest
                                         ):
-        print("Model is None:",model is not None)
-        print(img_detected)
-                    # Reshape
-        img_detected_save = cv2.resize(img_detected_save,(112,112))
-                    
-        access =face_services.face_check_track(model,img_detected_save,img_detected)
-        print("Access",access)
-        
-        
+
         ## Verify that the Plate Number
         try:
                 print(request.platenum)
