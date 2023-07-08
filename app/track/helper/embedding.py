@@ -1,11 +1,8 @@
 import torch
-import tensorflow as tf
 import numpy as np
 from skimage import transform as trans
 import cv2
-import face_recognition as face
 import matplotlib.pyplot as plt
-import urllib.request
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 from app.track.backbone import get_model
@@ -65,19 +62,19 @@ class Embedding(object):
         feat = self.model(imgs)
         feat = feat.reshape([self.batch_size, 2*feat.shape[1]])
         return feat.cpu().numpy()
-    
-def processing_images(img, is_filter=False, detector="opencv"):
-    if is_filter:
-        img = cv2.fastNlMeansDenoisingColored(img, None, 15, 15, 3, 21)
-    
-    locations_faces = face.api.face_locations(img, model=detector)
-    if len(locations_faces) != 0:
-        top, right, bottom, left = locations_faces[0]
-        face_extract = img[top:bottom, left:right]
-        face_extract = tf.image.resize_with_pad(face_extract, 224, 224, antialias=True)
-        return np.array(face_extract)
-    else:
-        return []
+
+# def processing_images(img, is_filter=False, detector="opencv"):
+#     if is_filter:
+#         img = cv2.fastNlMeansDenoisingColored(img, None, 15, 15, 3, 21)
+#
+#     locations_faces = face.api.face_locations(img, model=detector)
+#     if len(locations_faces) != 0:
+#         top, right, bottom, left = locations_faces[0]
+#         face_extract = img[top:bottom, left:right]
+#         face_extract = tf.image.resize_with_pad(face_extract, 224, 224, antialias=True)
+#         return np.array(face_extract)
+#     else:
+#         return []
 
 # def read_image_user(email):
 #     users = user_fb.find({'email': email})

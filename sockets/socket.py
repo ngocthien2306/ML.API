@@ -5,7 +5,8 @@ import cv2
 import numpy as np
 from fastapi.responses import JSONResponse
 
-from sockets.services.socket import LP_detect
+from sockets.services.socket import checkDetailVehicle
+
 print("Khởi tạo socket")
 websocket_connections = []
 socket_router = APIRouter()
@@ -30,21 +31,29 @@ async def websocket_endpoint(websocket: WebSocket):
                 # Lấy dữ liệu ảnh từ trường "Image"
                 img_str = base64.b64decode(json_data['Image'])
                 # Chuyển đổi dữ liệu ảnh thành đối tượng numpy array
-                image_np = cv2.imdecode(np.frombuffer(img_str, np.uint8), cv2.IMREAD_COLOR)
-                
-                print(image_np.shape)
+                #image_np = cv2.imdecode(np.frombuffer(img_str, np.uint8), cv2.IMREAD_COLOR)
+
 
                 predictions =json_data['Predictions']
+                print(predictions)
+                listChar = ('','','','')
                 if len(predictions) != 0: 
-                    listChar = LP_detect(image_np)
+                    listChar = checkDetailVehicle(img_str)
                     if len(listChar) == 0 or not listChar:
                         listChar = "None"
                     print("Chuoi bien so", listChar)
                 # Xử lý dữ liệu nhận được tại đây
                 # Gửi phản hồi về cho client
-                await websocket.send_text(listChar)
+                data = {
+                    'TypeVehicle': listChar[0],
+                    'Plate': listChar[1],
+                    'TypeLp': listChar[2],
+                    'Mess': listChar[3]
+                }
+                json_data = json.dumps(data)
+                await websocket.send_text(json_data)
                     
     except Exception as e:
         print('Client disconnected:' ,str(e))
-        return await websocket_connections.remove(websocket)
+        return websocket_connections.remove(websocket)
         #return await websocket.close()

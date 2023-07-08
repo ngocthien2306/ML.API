@@ -4,9 +4,7 @@ from datetime import datetime
 class GetUserListResponseSchema(BaseModel):
     Id: int = Field(..., description="ID")
     Email: str = Field(..., description="Email")
-    NickName: str = Field(..., description="Nickname")
-    CreatedAt: datetime = Field(..., description="Created Day")
-    UpdatedAt: datetime = Field(..., description="Updated Day")
+    UserName: str = Field(..., description="Nickname")
     
     class Config:
         orm_mode = True

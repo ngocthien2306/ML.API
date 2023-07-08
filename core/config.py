@@ -8,18 +8,19 @@ PORT = os.environ.get("PORT")
 DRIVER = os.environ.get("DRIVER")
 USERNAME = os.environ.get("USERNAMEMMSQL")
 PASS = os.environ.get("PASSMMSQL")
-IMAGE_NOT_FOUND_PATH = '/data/thinhlv/thiennn/deeplearning/vecteezy_icon-image-not-found-vector_.jpg'
-print(SERVERNAME)
-print(DBNAME)
-print(PORT)
+IMAGE_NOT_FOUND_PATH = './public/images/image_not_available.png'
 
 class Config(BaseSettings):
     ENV: str = "development"
     DEBUG: bool = True
-    APP_HOST: str = "127.0.0.1"
-    APP_PORT: int = 8010
-    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
-    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
+    APP_HOST: str = "26.115.12.45"
+    APP_PORT: int = 8005
+    WRITER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
+        "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
+        "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
+    READER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
+        "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
+        "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
     JWT_SECRET_KEY: str = "fastapi"
     JWT_ALGORITHM: str = "HS256"
     SENTRY_SDN: str = None
@@ -37,14 +38,22 @@ class DevelopmentConfig(Config):
 
 
 class LocalConfig(Config):
-    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
-    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
+    WRITER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
+        "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
+        "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
+    READER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
+        "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
+        "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
 
 
 class ProductionConfig(Config):
     DEBUG: str = False
-    WRITER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
-    READER_DB_URL: str = f"mssql+pymssql://deeplearning:thien123@deeplearning.westus3.cloudapp.azure.com/KIOSK"
+    WRITER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
+        "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
+        "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
+    READER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
+        "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
+        "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
 
 
 def get_config():

@@ -12,7 +12,7 @@ from core.exceptions import (
     UserNotFoundException,
 )
 from core.utils.token_helper import TokenHelper
-from sockets.services.socket import LP_detect
+from sockets.services.socket import checkDetailVehicle
 
 
 class UserService:
@@ -69,22 +69,22 @@ class UserService:
 
     async def login(self, email: str, password: str) -> LoginResponseSchema:
         result = await session.execute(
-            select(User).where(and_(User.Email == email, password == password))
+            select(User).where(and_(User.Email == email, User.Password == password))
         )
         user = result.scalars().first()
         if not user:
             raise UserNotFoundException
         response = LoginResponseSchema(
-            token=TokenHelper.encode(payload={"user_id": user.Id}),
+            token=TokenHelper.encode(payload={"user_id": user.UserId}),
             refresh_token=TokenHelper.encode(payload={"sub": "refresh"}),
         )
         return response
     async def verify_lp(self, imagelp) -> str:
-        lp = LP_detect(imagelp)
-        first_lp = next(iter(lp), None)
-        if first_lp is None:
+        lp = checkDetailVehicle(imagelp)
+        #first_lp = next(iter(lp), None)
+        if lp is None:
             return "Not Found"
-        return first_lp
+        return lp
     async def verify_id(self, imageId)-> str:
         stringId = self.id_verify.detect_id(imageId)
         if stringId is None or stringId == 'Not Found':

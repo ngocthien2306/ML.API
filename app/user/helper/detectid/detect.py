@@ -9,7 +9,7 @@ from app.user.helper.ocr.text_recognition import TextRecognition
 
 class yoloDetect:
     def __init__(self):
-        self.detect_path = "/data/thinhlv/hung/Capstone/cccd_detect_character/runs/detect/train39/weights/best.pt"
+        self.detect_path = "D:/CAPSTONE2023/model/bestCCCD.pt"
         self.text_recognition_model = TextRecognition()
         self.model = YOLO(str(self.detect_path)) 
     def detect_id(self, image) -> str:
@@ -18,6 +18,7 @@ class yoloDetect:
             image = Image.fromarray(image)
             
             results = self.model(image, iou=0.1)
+            print(self.model)
             x1, y1, x2, y2,acc,l = None, None, None, None, None, None
             x1_title, y1_title, x2_title, y2_title,acc_title,l_title = None, None, None, None, None, None
             if len(results[0].boxes.data) == UserEnum.NUMBER_FIELD_CCCD.value:
@@ -38,7 +39,7 @@ class yoloDetect:
                     ## Verify Title
                     cropped_image_title = image_croped_title.crop((x1_title, y1_title, x2_title, y2_title))
                     cv2_image_title = cv2.cvtColor(np.array(cropped_image_title), cv2.COLOR_RGB2BGR)
-                    cv2.imwrite("/data/thinhlv/hung/Capstone/cccd_detect_character/testTitle.jpg", cv2_image_title)
+                    cv2.imwrite("D:/CAPSTONE2023/ImageTestTemp/testTitle.jpg", cv2_image_title)
                     title = self.text_recognition_model.predict(cv2_image_title)
                     print("title",title)
                     cropped_image = image_croped.crop((x1, y1, x2, y2))
@@ -56,9 +57,9 @@ class yoloDetect:
     def detect_idImage(self, image) -> str:
         try:
             image = Image.fromarray(image)
-            image.save("/data/thinhlv/hung/Capstone/ML.API/testImage2.png")
+            image.save("D:/CAPSTONE2023/ImageTestTemp/testImage2.png")
             cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-            cv2.imwrite("/data/thinhlv/hung/Capstone/ML.API/testImage.jpg", cv2_image)
+            cv2.imwrite("D:/CAPSTONE2023/ImageTestTemp/testImage.jpg", cv2_image)
             id = self.text_recognition_model.predict(cv2_image)
             print(id)
             return id

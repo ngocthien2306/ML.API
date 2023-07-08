@@ -6,9 +6,9 @@ import numpy as np
 import base64
 import os
 from ultralytics import YOLO
-IMAGE_USERS_PATH = "/data/thinhlv/hung/Capstone/ML.API/public/users/"
-model_v8 = YOLO("/data/thinhlv/hung/CODE/License-Plate-Recognition/training/runs/detect/done_train/weights/best.pt")
-yolo_license_platev8 = YOLO("/data/thinhlv/hung/CODE/License-Plate-Recognition/training/yolov8/runs/detect/train4/weights/best.pt")
+IMAGE_USERS_PATH = "./public/images/users"
+model_v8 = YOLO("D:/CAPSTONE2023/model/done_train.pt")
+yolo_license_platev8 = YOLO("D:/CAPSTONE2023/model/best.pt")
 # Update configuration
 class VehicleServices:
     def __init__(self):
@@ -24,7 +24,7 @@ class VehicleServices:
         img = self.convertbase64(imagelp)
         
         img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
-        cv2.imwrite("/data/thinhlv/hung/Capstone/ML.API/testImage2.jpg",img)
+        cv2.imwrite("D:/CAPSTONE2023/ImageTestTemp/testImage2.jpg",img)
         results = model_v8.predict(img)
         lableDetect =  results[0].names
         bounding_boxes =results[0].boxes.data
@@ -37,7 +37,7 @@ class VehicleServices:
             print("detect",xmin, ymin, xmax, ymax,lableDetect[int(name)])
             if name == 0.0:
                 crop_img = img[int(ymin):int(ymax), int(xmin):int(xmax)]
-                cv2.imwrite("/data/thinhlv/hung/Capstone/ML.API/testImage.jpg",crop_img)
+                cv2.imwrite("D:/CAPSTONE2023/ImageTestTemp/testImage.jpg",crop_img)
                 lp = self.read_plate_v8(yolo_license_platev8, crop_img)
                 if lp != "unknown":
                     print("lp",lp)

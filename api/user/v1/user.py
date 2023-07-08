@@ -66,13 +66,13 @@ async def verify(request: VerifylicensePlateRequest):
             return {"license": "Not Found"} ## ExceptionTrack
     try:
         # Convert string to Image
+
+        #np_data = np.fromstring(decoded_data, np.uint8)
+        #image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
         decoded_data = base64.b64decode(request.stringlp)
-        np_data = np.fromstring(decoded_data, np.uint8)
-        image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
-        
         
         # Lp returned to LP Dictionary so Check accuracy here
-        lp = await UserService().verify_lp(imagelp=image)
+        lp = await UserService().verify_lp(imagelp=decoded_data)
         
         return {"license": str(lp)}
     except Exception as e:

@@ -6,14 +6,13 @@ from app.track.schemas.track import TrackReportResposeSchemas, TrackVehicleRespo
 from app.track.services.track import TrackingServices
 from fastapi.responses import JSONResponse
 ## Image Recognition
-import base64
-import numpy as np
+
 import cv2
 from deepface import DeepFace
 from datetime import datetime
-from typing import Union
+
 import os
-from os.path import join, dirname, isdir
+from os.path import isdir
 from dotenv import load_dotenv
 load_dotenv()
 TARGET = os.environ.get("TARGET")
@@ -58,13 +57,11 @@ async def trackVehicle(request: CheckVehicleRequest):
         lpImage_path = path_img_detected + "/lp_{}.jpg".format(date_time)
         ## Image DetectFace
         ### If it can't be detected return exception
-        print(img_detected)        
         face_detected = DeepFace.detectFace(face, detector_backend='ssd', enforce_detection=True)
         ## Save Image to path  --- Save Image Detect
         cv2.imwrite(img_detected, face_detected[:,:,::-1]*255)
         cv2.imwrite(lpImage_path, lpImage)
-        print(img_detected)
-        print(lpImage_path)
+
         ## Using track_services to write in Database
         result = await track_services.create_track_vehicle_async(
             embedding.model,
