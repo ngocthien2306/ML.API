@@ -1,10 +1,6 @@
 from fastapi import APIRouter,WebSocket,WebSocketDisconnect
 import base64
 import json
-import cv2
-import numpy as np
-from fastapi.responses import JSONResponse
-
 from sockets.services.socket import checkDetailVehicle
 
 print("Khởi tạo socket")
