@@ -23,7 +23,7 @@ batch_size = 32
 
 embedding = Embedding(MODEL_PATH, (3, 112, 112), 128, network=NETWORK)
 #End: Deeplearning
-
+print("MODEL_PATH",embedding)
 
 track_router = APIRouter()
 track_services = TrackingServices(TARGET)

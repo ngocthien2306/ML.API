@@ -92,8 +92,16 @@ class TrackingServices:
         except Exception as e:
             return {"status": "Error is:"+ str(e),"fee": 0}  
     @Transactional()
-    async def create_track_vehicle_async(self, model, img_detected_save, imglp_detected: str, img_detected: str,
-                                         request: CheckVehicleRequest):
+
+    async def create_track_vehicle_async(self, 
+                                        model,
+                                        img_detected_save,
+                                        imglp_detected: str,
+                                        img_detected: str,
+                                        request: CheckVehicleRequest
+                                        ):
+
+        ## Verify that the Plate Number
         try:
             print(request.platenum)
             result = await session.execute(

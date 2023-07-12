@@ -21,6 +21,7 @@ class Config(BaseSettings):
     READER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
         "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
         "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
+
     JWT_SECRET_KEY: str = "fastapi"
     JWT_ALGORITHM: str = "HS256"
     SENTRY_SDN: str = None
@@ -44,6 +45,7 @@ class LocalConfig(Config):
     READER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
         "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
         "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
+
 
 
 class ProductionConfig(Config):

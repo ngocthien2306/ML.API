@@ -24,6 +24,7 @@ async def detectVehicle(request: DetectVehicleRequest):
     except Exception as e:
         print(str(e))
         return JSONResponse(content={"error": str(e)}, status_code=400)
+
 @vehicle_router.post(
     "/addVehicleUser",
     response_model=AddVehicleUserRespose,
