@@ -13,6 +13,7 @@ IMAGE_NOT_FOUND_PATH = './public/images/image_not_available.png'
 class Config(BaseSettings):
     ENV: str = "development"
     DEBUG: bool = True
+
     APP_HOST: str = "26.115.12.45"
     APP_PORT: int = 8005
     WRITER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
@@ -21,7 +22,6 @@ class Config(BaseSettings):
     READER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
         "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
         "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
-
     JWT_SECRET_KEY: str = "fastapi"
     JWT_ALGORITHM: str = "HS256"
     SENTRY_SDN: str = None
@@ -45,7 +45,6 @@ class LocalConfig(Config):
     READER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
         "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
         "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
-
 
 
 class ProductionConfig(Config):
