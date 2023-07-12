@@ -49,6 +49,7 @@ class LocalConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG: str = False
+
     WRITER_DB_URL: str = "mssql+pyodbc:///?odbc_connect=" \
         "Driver={SQL Server};Server=A301-09\\PARKINGSITE;" \
         "Database=KIOSK;Uid=parkingai;Pwd=thien123;"
