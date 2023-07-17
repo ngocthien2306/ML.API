@@ -3,6 +3,7 @@ import os
 import numpy as np
 from sklearn import preprocessing
 import cv2
+import traceback
 from tensorflow.keras.preprocessing.image import img_to_array,load_img
 from app.track.helper.embedding import euclid_distance
 class FaceServices:
@@ -11,9 +12,7 @@ class FaceServices:
         
         #img = load_img(employee, target_size=(112, 112))
         img = img_to_array(img)
-        print(*img[0])
         
-        np.set_printoptions(threshold=np.inf)
 
         img_flip = cv2.flip(img, 1)
         img_c = np.array([img, img_flip])
@@ -23,9 +22,6 @@ class FaceServices:
         img_2 = ((img_c[1:2] / 255) - 0.5) / 0.5
        
         net_out_1 = model.cuda(0)(torch.from_numpy(img_1))
-        with open('/data/thinhlv/hung/Capstone/ML.API/file.txt', 'w') as output_file:
-            data_str = np.array2string(img_2, separator=', ')
-            output_file.write(data_str)
         embedding1 = net_out_1.detach().cpu().numpy()
         net_out_2 = model.cuda(0)(torch.from_numpy(img_2))
         embedding2 = net_out_2.detach().cpu().numpy()
@@ -45,11 +41,13 @@ class FaceServices:
             return False
     def face_check_user(self,model, img_verify, image_db, threshor=1.4) -> bool:
         try:
+            print(img_verify.shape, image_db.shape )
             e_verify = self.embedding_face(model, img_verify)
             e_db = self.embedding_face(model, image_db)
             dist = euclid_distance(e_db, e_verify)
             print("Accuracy",dist)
             return  True if dist < threshor else False
         except Exception as e:
+            traceback.print_exc()
             print(e)
             return False

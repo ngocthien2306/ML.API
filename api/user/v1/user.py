@@ -1,13 +1,23 @@
+import time
 from typing import List
 import base64
 import numpy as np
 import cv2
 import io
 from PIL import Image
+from os.path import isdir
+import os
+import shutil
+import glob
+from pathlib import Path
+import  traceback
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Query, UploadFile,File
 from fastapi.responses import JSONResponse
-from api.user.v1.request.user import LoginRequest, RegisterIdVietNamRequest, VerifyIdVietNameRequest, VerifylicensePlateRequest
-from api.user.v1.response.user import LoginResponse, ResgisterIdVietNamResponse, VerifylIdVietNamResponse, VerifylicensePlateResponse
+from api.user.v1.request.user import LoginRequest, RegisterIdVietNamRequest, VerifyIdVietNameRequest, \
+    VerifylicensePlateRequest, RegisterUserFaceRequest, CheckFaceUserFolderRequest, DeleteUserFolderRequest
+from api.user.v1.response.user import LoginResponse, ResgisterIdVietNamResponse, VerifylIdVietNamResponse, \
+    VerifylicensePlateResponse, RegisterUserFaceResponse, CheckFaceUserFolder, DeleteUserFolderResponse
 from app.user.schemas import (
     ExceptionResponseSchema,
     GetUserListResponseSchema,
@@ -20,10 +30,11 @@ from core.fastapi.dependencies import (
     IsAdmin,
     AllowAll
 )
-
+load_dotenv()
 user_router = APIRouter()
-
-
+#TARGET = "./public/images/"
+TARGET = os.getenv("TARGET")
+print(TARGET)
 @user_router.get(
     "",
     response_model=List[GetUserListResponseSchema],
@@ -164,4 +175,105 @@ async def verifyId(request: VerifyIdVietNameRequest):
     except Exception as e:
         print(str(e))
         return JSONResponse(content={"error": str(e)}, status_code=400)
-    
+
+
+@user_router.post(
+    "/registerimageuser",
+    response_model=RegisterUserFaceResponse,
+    responses={"404": {"model": ExceptionResponseSchema}},
+)
+async def registerImageUser(request: RegisterUserFaceRequest):
+    if not request.userid or request.userid == "":
+        return {"id": "Not Found"}  ## ExceptionTrack
+    try:
+        print(request.userid)
+        # Convert string to Image
+        decoded_data = base64.b64decode(request.face)
+        # np_data = np.fromstring(decoded_data, np.uint8)
+        # image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
+        # image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+        image_io = io.BytesIO(decoded_data)
+        image = Image.open(image_io)
+        img = np.asarray(image)
+
+        # Save Image
+        path_img_detected = TARGET +"users/"+ str(request.userid) + "/face/"
+        if not isdir(path_img_detected):
+            os.makedirs(path_img_detected)
+        lpImage_path = path_img_detected + "/face_{}.jpg".format(request.userid)
+        cv2.imwrite(lpImage_path, img)
+
+        file_paths = Path(path_img_detected).glob("*")
+        files = [UploadFile(filename=file_path.name, file=open(file_path, "rb")) for file_path in file_paths]
+        await UserService().send_Image_To_Client(request.userid,files)
+        return {"result": str(request.userid)}
+    except Exception as e:
+        print(str(e))
+        traceback.print_exc()
+        return JSONResponse(content={"error": str(e)}, status_code=400)
+@user_router.post(
+    "/test",
+    response_model=RegisterUserFaceResponse,
+    responses={"404": {"model": ExceptionResponseSchema}},
+)
+async def registerImageUser():
+
+    try:
+        image_files = []
+        path = "D:\\CAPSTONE2023\\ML.API\\public\\images\\users\\20230715114204\\face"
+        file_paths = Path(path).glob("*")
+        files = [UploadFile(filename=file_path.name, file=open(file_path, "rb")) for file_path in file_paths]
+        await UserService().send_Image_To_Client("123id",files)
+        return {"result": "0"}
+    except Exception as e:
+        print(str(e))
+        traceback.print_exc()
+        return JSONResponse(content={"error": str(e)}, status_code=400)
+@user_router.post(
+    "/checkfaceuserfolder",
+    response_model=CheckFaceUserFolder,
+    responses={"404": {"model": ExceptionResponseSchema}},
+)
+async def checkFaceUserFolder(request: CheckFaceUserFolderRequest):
+    try:
+
+        absolute_path = os.path.abspath(TARGET+"/users")
+        if not os.path.exists(absolute_path):
+            print(f"Đường dẫn {absolute_path} không tồn tại.")
+            return
+
+        # Kiểm tra xem TARGET có phải là một thư mục hay không
+        if not os.path.isdir(absolute_path):
+            print(f"{absolute_path} không phải là một thư mục.")
+            return
+
+        # Lấy danh sách các thư mục con trong TARGET
+        subdirectories = [name for name in os.listdir(absolute_path) if
+                          os.path.isdir(os.path.join(absolute_path, name))]
+        dataNotExit = []
+        for folderNew in subdirectories:
+            if folderNew not in request.folders:
+                dataNotExit.append(folderNew)
+        result=  await UserService().getImageFolder(dataNotExit, absolute_path)
+
+        return {"result": result}
+    except Exception as e:
+        print(str(e))
+        traceback.print_exc()
+        return JSONResponse(content={"error": str(e)}, status_code=400)
+@user_router.post(
+    "/deletefaceuserfolder",
+    response_model=DeleteUserFolderResponse,
+    responses={"404": {"model": ExceptionResponseSchema}},
+)
+async def checkFaceUserFolder(request: DeleteUserFolderRequest):
+    try:
+        absolute_path = os.path.abspath(TARGET+"/users/"+ str(request.userId))
+        if not os.path.exists(absolute_path):
+            return {"mess": "Not Found", "status":"false"}
+        shutil.rmtree(absolute_path)
+        return {"mess": "", "status":"done"}
+    except Exception as e:
+        print(str(e))
+        traceback.print_exc()
+        return JSONResponse(content={"error": str(e)}, status_code=400)

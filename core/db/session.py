@@ -1,5 +1,7 @@
 from contextvars import ContextVar, Token
 from typing import Union
+
+from select import select
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -27,7 +29,6 @@ def set_session_context(session_id: str) -> Token:
 def reset_session_context(context: Token) -> None:
     session_context.reset(context)
 
-
 engines = {
     "writer": create_engine(config.WRITER_DB_URL, pool_recycle=3600),
     "reader": create_engine(config.READER_DB_URL, pool_recycle=3600),
@@ -51,4 +52,3 @@ session: Union[AsyncSession, async_scoped_session] = async_scoped_session(
     scopefunc=get_session_context,
 )
 Base = declarative_base()
-

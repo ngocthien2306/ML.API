@@ -1,10 +1,17 @@
+import time
 from typing import Optional, List
 from PIL import Image
 from sqlalchemy import or_, select, and_
 from app.user.helper.detectid.detect import yoloDetect
 from io import BytesIO
-from app.user.models import User
+from app.user.models import User, Device
+from  fastapi import  UploadFile
 from app.user.schemas.user import LoginResponseSchema
+import  traceback
+import  httpx
+import os
+import  base64
+from pathlib import Path
 from core.db import Transactional, session
 from core.exceptions import (
     PasswordDoesNotMatchException,
@@ -99,3 +106,51 @@ class UserService:
         image = Image.open(BytesIO(file))
 
         return image
+
+    async def send_Image_To_Client(self,user_ids, files):
+        try:
+            query = select(Device.DevicePublicIP, Device.DeviceUsePort ).where(Device.DeviceType == "DVC003")
+            result = await session.execute(query)
+            device_exist = result.all()
+            files_data = [(f"files", (file.filename, file.file.read(), file.content_type)) for file in files]
+            for device in device_exist:
+                url = f"http://{device.DevicePublicIP}:{device.DeviceUsePort}/api/face/addusertofolder"
+                print(url)
+                data = {"user_ids": user_ids}
+
+
+                try:
+                    async with httpx.AsyncClient() as client:
+                        response = await client.post(url, data=data, files=files_data)
+                        response_data = response.json()
+                        return response_data
+                except httpx.RequestError as e:
+                    print(f"Error making API request: {e}")
+
+                except Exception as e:
+                    print(f"An error occurred: {e}")
+
+            return True
+        except Exception as e:
+            traceback.print_exc()
+    async def getImageFolder(self, listFouder, targetPath):
+        start_time = time.time()
+        dataReturn ={}
+        image_data = []
+        for fouder in listFouder:
+            path = targetPath + "\\"+str(fouder) + "\\face"
+            for file_name in os.listdir(path):
+                file_path = os.path.join(path, file_name)
+                if os.path.isfile(file_path):
+                    with open(file_path, "rb") as file:
+                        image_bytes = file.read()
+                        image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+                        image_data.append({"file_name": file_name, "image_base64": image_base64})
+            dataReturn[str(fouder)] = image_data
+        endtime = time.time()
+        print((endtime - start_time))
+        return dataReturn
+
+
+
+

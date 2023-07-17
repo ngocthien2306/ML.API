@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import List
 
 
 class LoginRequest(BaseModel):
@@ -16,3 +17,10 @@ class RegisterIdVietNamRequest(BaseModel):
     BirthDay : str = Field(..., description="Birth Day")
     PictureFace : str = Field(..., description="Picture Face")
     Stringidvn : str =  Field(..., description="Id VietName Image")
+class RegisterUserFaceRequest(BaseModel):
+    face : str = Field(..., description="Face Image")
+    userid  : str = Field(..., description="User Id")
+class CheckFaceUserFolderRequest(BaseModel):
+    folders: List[str]  =  Field(..., description="List Image Folder")
+class DeleteUserFolderRequest(BaseModel):
+    userId: str  =  Field(..., description="")

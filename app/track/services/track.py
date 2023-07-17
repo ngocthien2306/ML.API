@@ -183,7 +183,79 @@ class TrackingServices:
         except SQLAlchemyError as e:
             # Handle the specific exception for SQLAlchemy errors
             return {"status": "Error is: " + str(e), "fee": 0}
+    async def create_track_vehicle_user(self, 
+                                        imglp_detected: str,
+                                        img_detected: str,
+                                        status,
+                                        request: CheckVehicleRequest
+                                        ):
+        result = await session.execute(
+                text(
+                    '''
+                    EXEC TRACK_MANAGEMENT 
+                        @Method=:Method, 
+                        @PlateNum=:PlateNum, 
+                        @StatusVehicle=:StatusVehicle, 
+                        @TypeTransport=:TypeTransport, 
+                        @TypePlate=:TypePlate,
+                        @SiteId=:SiteId,
+                        @TrackNumber=:TrackNumber,
+                        @Fee=:Fee,
+                        @DetectInFace=:DetectInFace,
+                        @PlateIn=:PlateIn
+                    '''
+                )
+                .params(
+                    Method="SaveTrack",
+                    PlateNum=request.platenum,
+                    StatusVehicle=VehicleStatus.ACCEPTIN.value,
+                    TypeTransport=request.typeTransport,
+                    TypePlate=request.typeLicensePlate,
+                    SiteId=request.siteId,
+                    TrackNumber=1,
+                    Fee=0,
+                    DetectInFace=img_detected,
+                    PlateIn=imglp_detected
+                )
+            )
+        results = result.fetchone()
+        is_exist = results.isExistYN
+        if is_exist == 'Y':
+            trackId = results.trackId
+            vehicleId = results.vehicleId
+            result.close()
+            result = await session.execute(
+                    text(
+                        '''
+                        EXEC TRACK_MANAGEMENT 
+                            @Method=:Method, 
+                            @DetectOutFace=:DetectOutFace,
+                            @PlateOut=:PlateOut,
+                            @StatusVehicle=:StatusVehicle,
+                            @TrackId=:TrackId,
+                            @VehicleId=:VehicleId
+                        '''
+                    )
+                    .params(
+                        Method="UpdateStatusVehicle",
+                        DetectOutFace=img_detected,
+                        PlateOut=imglp_detected,
+                        StatusVehicle=status,
+                        TrackId=trackId,
+                        VehicleId=vehicleId
+                    )
+                )
+            results = result.fetchone()
 
+            # Close the result set
+            result.close()
+            print(status)
+            if status  == True:
+                return {"status": str(VehicleStatus.ACCEPTOUT.value), "fee": 0}
+            else:
+                return {"status": str(VehicleStatus.BLOCK.value), "fee": 0}
+        else:
+            return {"status": str(VehicleStatus.ACCEPTIN.value), "fee": 0}
     def convertbase64 (self,string64 ):
         decoded_data = base64.b64decode(string64)
         np_data = np.fromstring(decoded_data, np.uint8)
@@ -249,8 +321,8 @@ class TrackingServices:
         return vehicle.scalars().first()
     @Transactional()
     async def get_image_user2(self,platenum):
-        query = select(UserPhoto.TakenPhoto).where(and_(UserPhoto.UserID == Vehicle.userId,
+        query = select(UserPhoto.UserID,UserPhoto.TakenPhoto ).where(and_(UserPhoto.UserID == Vehicle.userId,
                                                         Vehicle.plateNum == platenum) )
         face_db = await session.execute(query)
         
-        return face_db.scalars().first()
+        return face_db.first()

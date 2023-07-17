@@ -10,3 +10,11 @@ class VerifylIdVietNamResponse(BaseModel):
     id: str = Field(..., description="ID Viet Nam")
 class ResgisterIdVietNamResponse(BaseModel):
     result: bool = Field(..., description="Result of registration")
+class RegisterUserFaceResponse(BaseModel):
+    result: str = Field(..., description="Result Create Image")
+
+class CheckFaceUserFolder(BaseModel):
+    result: dict = Field(..., description="Result Create Image")
+class DeleteUserFolderResponse(BaseModel):
+    mess: str = Field(..., description="Result Delete Image")
+    status: str = Field(..., description="Result Delete Image")

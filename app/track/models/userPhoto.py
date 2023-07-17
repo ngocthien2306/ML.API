@@ -10,3 +10,5 @@ class UserPhoto(Base):
     UserID =Column(String(20), default=True)
     TakenPhoto =Column(LargeBinary, default=True)
     IdCardPhoto = Column(LargeBinary, default=False)
+    IdCardBackPhoto = Column(LargeBinary, default=False)
+    IdCardFrontPhoto = Column(LargeBinary, default=False)
