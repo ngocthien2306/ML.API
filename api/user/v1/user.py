@@ -1,4 +1,5 @@
-import time
+import tempfile
+import zipfile
 from typing import List
 import base64
 import numpy as np
@@ -8,12 +9,11 @@ from PIL import Image
 from os.path import isdir
 import os
 import shutil
-import glob
 from pathlib import Path
 import  traceback
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Query, UploadFile,File
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from api.user.v1.request.user import LoginRequest, RegisterIdVietNamRequest, VerifyIdVietNameRequest, \
     VerifylicensePlateRequest, RegisterUserFaceRequest, CheckFaceUserFolderRequest, DeleteUserFolderRequest
 from api.user.v1.response.user import LoginResponse, ResgisterIdVietNamResponse, VerifylIdVietNamResponse, \
@@ -261,6 +261,52 @@ async def checkFaceUserFolder(request: CheckFaceUserFolderRequest):
         print(str(e))
         traceback.print_exc()
         return JSONResponse(content={"error": str(e)}, status_code=400)
+
+@user_router.post("/downloadfolder", responses={"404": {"model": ExceptionResponseSchema}})
+async def download_user_folder(request: CheckFaceUserFolderRequest):
+    try:
+        absolute_path = os.path.abspath(TARGET + "/users")
+        if not os.path.exists(absolute_path):
+            print(f"Đường dẫn {absolute_path} không tồn tại.")
+            return
+
+        if not os.path.isdir(absolute_path):
+            print(f"{absolute_path} không phải là một thư mục.")
+            return
+
+        subdirectories = [name for name in os.listdir(absolute_path) if os.path.isdir(os.path.join(absolute_path, name))]
+        dataNotExit = []
+        for folderNew in subdirectories:
+            if folderNew not in request.folders:
+                dataNotExit.append(folderNew)
+
+
+        destination_folder = TARGET
+
+        # Create a temporary zip file
+        temp_dir = tempfile.mkdtemp()
+        zip_path = os.path.join(temp_dir, "downloaded.zip")
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for folderNew in dataNotExit:
+                folder_path = os.path.join(absolute_path, folderNew)
+                if os.path.isdir(folder_path):
+                    for root, dirs, files in os.walk(folder_path):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            zipf.write(file_path, os.path.join(folderNew, os.path.relpath(file_path, folder_path)))
+
+        # Move the zip file to the destination folder
+        shutil.move(zip_path, os.path.join(destination_folder, "downloaded.zip"))
+
+        # Return the zip file as a response
+        return FileResponse(os.path.join(destination_folder, "downloaded.zip"), filename="downloaded.zip", media_type="application/zip")
+
+    except Exception as e:
+        print(str(e))
+        traceback.print_exc()
+        return JSONResponse(content={"error": str(e)}, status_code=400)
+
 @user_router.post(
     "/deletefaceuserfolder",
     response_model=DeleteUserFolderResponse,
